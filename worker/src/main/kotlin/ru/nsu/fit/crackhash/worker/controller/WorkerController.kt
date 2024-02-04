@@ -8,7 +8,7 @@ import ru.nsu.fit.crackhash.worker.service.WorkerService
 @RequestMapping("/api/hash/crack")
 class WorkerController(private val workerService: WorkerService) {
     @PatchMapping
-    fun takeTasks(@RequestBody crackRequest: CrackRequestDto) = workerService.takeTasks(crackRequest)
+    fun takeTask(@RequestBody crackRequest: CrackRequestDto) = workerService.takeTask(crackRequest)
 
     @GetMapping
     fun getTasksResults() = workerService.getTasksResults()

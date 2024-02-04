@@ -11,7 +11,7 @@ class WorkerServiceImpl : WorkerService {
     val taskRepo = ConcurrentHashMap<String, WorkerTask>()
     val resultRepo = ConcurrentHashMap<String, Array<String>>()
 
-    override fun takeTasks(crackRequest: CrackRequestDto) {
+    override fun takeTask(crackRequest: CrackRequestDto) {
         taskRepo[crackRequest.requestId] = WorkerTask(crackRequest)
     }
 

@@ -1,7 +1,10 @@
 package ru.nsu.fit.crackhash.worker.model.dto
 
-data class CrackRequestDto (
+import com.fasterxml.jackson.annotation.JsonProperty
+
+data class CrackRequestDto(
     val hash: String,
     val maxLength: Int,
-    val requestId: String
+    @JsonProperty("request_id")
+    val requestId: String,
 )

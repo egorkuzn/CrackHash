@@ -6,16 +6,17 @@ import ru.nsu.fit.crackhash.manager.model.dto.CrackResponseDto
 import ru.nsu.fit.crackhash.manager.model.dto.Status
 import ru.nsu.fit.crackhash.manager.model.dto.StatusResposeDto
 import ru.nsu.fit.crackhash.manager.model.entity.CrackParam
+import ru.nsu.fit.crackhash.manager.repo.RequestRepo
+import ru.nsu.fit.crackhash.manager.repo.ResponseRepo
 import ru.nsu.fit.crackhash.manager.service.ManagerService
-import java.util.concurrent.ConcurrentHashMap
 import kotlin.random.Random
 
 @Service
-class ManagerServiceImpl: ManagerService {
-    val requestRepo = ConcurrentHashMap<String, CrackParam>()
-    val responseRepo = ConcurrentHashMap<String, Array<String>>()
-
-    override fun crack(crackRequest: CrackRequestDto) = CrackResponseDto (
+class ManagerServiceImpl(
+    private val requestRepo: RequestRepo,
+    private val responseRepo: ResponseRepo,
+) : ManagerService {
+    override fun crack(crackRequest: CrackRequestDto) = CrackResponseDto(
         requestId = randomString().let {
             requestRepo[it] = CrackParam(crackRequest)
             it
@@ -31,7 +32,7 @@ class ManagerServiceImpl: ManagerService {
                 responseRepo[it]
             )
         else
-            StatusResposeDto (
+            StatusResposeDto(
                 Status.IN_PROGRESS,
                 null
             )
