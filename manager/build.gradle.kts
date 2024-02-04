@@ -7,7 +7,7 @@ plugins {
     kotlin("plugin.spring") version "1.9.22"
 }
 
-group = "ru.nsu.fit"
+group = "ru.nsu.fit.crackhash"
 version = "0.0.1-SNAPSHOT"
 
 java {

@@ -1,11 +1,11 @@
-package ru.nsu.fit.crackhash
+package ru.nsu.fit.crackhash.worker
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 
 @SpringBootApplication
-class CrackhashApplication
+class WorkerApplication
 
 fun main(args: Array<String>) {
-    runApplication<CrackhashApplication>(*args)
+    runApplication<WorkerApplication>(*args)
 }
