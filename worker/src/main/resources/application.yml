@@ -1,1 +1,1 @@
-
+scheduler.interval: "*/20 * * * * *"

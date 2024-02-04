@@ -1,4 +1,4 @@
-package ru.nsu.fit.crackhash.manager.config.scheduler
+package ru.nsu.fit.crackhash.worker.config.scheduler
 
 import org.springframework.context.annotation.Configuration
 import org.springframework.scheduling.annotation.Async
@@ -9,16 +9,15 @@ import org.springframework.scheduling.annotation.Scheduled
 @EnableAsync
 @Configuration
 @EnableScheduling
-class ManagerScheduler {
-
+class WorkerScheduler {
     @Async
-    @Scheduled(cron = "\${workers.scheduler.interval}")
+    @Scheduled(cron = "\${scheduler.interval}")
     fun sendToWorkers() {
 
     }
 
     @Async
-    @Scheduled(cron = "\${workers.scheduler.interval}")
+    @Scheduled(cron = "\${scheduler.interval}")
     fun recieveFromWorkers() {
 
     }
