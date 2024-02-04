@@ -1,1 +1,3 @@
-workers.urs: $WORKERS_URLS
+workers:
+  urls: $WORKERS_URLS
+  scheduler:interval: "*/20 * * * * *"
