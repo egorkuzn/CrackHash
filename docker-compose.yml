@@ -1,0 +1,30 @@
+version: '3.3'
+
+services:
+  crackhash-manager:
+    image: egorkuzn2002/crackhash-manager:latest
+    networks:
+      - crackhash-manager-network
+      - crackhash-worker-one-network
+      - crackhash-worker-two-network
+    env_file:
+      - .env
+    ports:
+      - "10010:80"
+  crackhash-worker-one:
+    image: egorkuzn2002/crackhash-manager:latest
+    networks:
+      - crackhash-worker-one-network
+  crackhash-worker-two:
+    image: egorkuzn2002/crackhash-manager:latest
+    networks:
+      - crackhash-worker-two-network
+
+networks:
+  crackhash-manager-network:
+    driver: bridge
+  crackhash-worker-one-network:
+    driver: bridge
+  crackhash-worker-two-network:
+    driver: bridge
+
