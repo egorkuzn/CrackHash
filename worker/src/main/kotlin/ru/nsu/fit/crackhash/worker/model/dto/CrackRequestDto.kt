@@ -1,10 +1,14 @@
 package ru.nsu.fit.crackhash.worker.model.dto
 
-import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.databind.PropertyNamingStrategy
+import com.fasterxml.jackson.databind.annotation.JsonNaming
 
-data class CrackRequestDto(
+@Suppress("DEPRECATION")
+@JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy::class)
+data class CrackRequestDto (
     val hash: String,
     val maxLength: Int,
-    @JsonProperty("request_id")
     val requestId: String,
+    val partNumber: Int,
+    val partCount: Int
 )

@@ -5,11 +5,26 @@ import java.util.concurrent.ConcurrentHashMap
 
 @Repository
 class ResponseRepo {
-    private val responseRepo = ConcurrentHashMap<String, Array<String>>()
 
-    fun containsKey(key: String) = responseRepo.containsKey(key)
+    private val responseRepo = ConcurrentHashMap<String, Array<String>>()
+    private val responseDelayCount = ConcurrentHashMap<String, Int>()
+
+    private val mergeFunction: (a: Array<String>, b: Array<String>) -> Array<String> = {
+            a, b -> a + b
+    }
 
     operator fun get(key: String) = responseRepo[key]
 
-    fun putAll(response: Map<String, Array<String>>) = responseRepo.putAll(response)
+    fun putAll(response: Map<String, Array<String>>) {
+        response.forEach {
+            responseRepo.merge(it.key, it.value, mergeFunction)
+            responseDelayCount.merge(it.key, 1, Int::minus)
+        }
+    }
+
+    fun setDelayCountForResponse(it: String, size: Int) {
+        responseDelayCount[it] = size
+    }
+
+    fun isFinished(requestId: String) = responseDelayCount[requestId] == 0
 }

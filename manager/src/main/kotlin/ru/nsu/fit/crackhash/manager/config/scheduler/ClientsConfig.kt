@@ -18,7 +18,7 @@ class ClientsConfig(
     @Bean
     fun getWorkers() = workers.map {
         Retrofit.Builder()
-            .baseUrl("$it/api/")
+            .baseUrl("$it/internal/api/")
             .addConverterFactory(
                 GsonConverterFactory.create(
                     GsonBuilder()

@@ -4,5 +4,4 @@ import ru.nsu.fit.crackhash.worker.model.dto.CrackRequestDto
 
 interface WorkerService {
     fun takeTask(crackRequest: CrackRequestDto)
-    fun getTasksResults(): Map<String, Array<String>>
 }
