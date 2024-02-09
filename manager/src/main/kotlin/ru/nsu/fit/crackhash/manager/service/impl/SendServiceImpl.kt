@@ -31,7 +31,7 @@ class SendServiceImpl(
                         it.partNumber,
                         partCount
                     )
-                )
+                ).execute()
             }
         }
     }

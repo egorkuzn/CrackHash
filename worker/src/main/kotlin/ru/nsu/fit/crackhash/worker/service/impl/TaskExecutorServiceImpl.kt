@@ -18,7 +18,7 @@ class TaskExecutorServiceImpl(private val manager: ManagerApi) : TaskExecutorSer
     @OptIn(DelicateCoroutinesApi::class)
     override fun takeNewTask(workerTask: WorkerTask) {
         GlobalScope.launch {
-            manager.sendTaskResult(workerTask.requestId to executeTask(workerTask))
+            manager.sendTaskResult(workerTask.requestId to executeTask(workerTask)).execute()
         }
     }
 
