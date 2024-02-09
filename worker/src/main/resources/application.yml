@@ -1,1 +1,1 @@
-manager.url: $MANAGER_URL
+manager.url: ${MANAGER_URL:http://crackhash-manager}

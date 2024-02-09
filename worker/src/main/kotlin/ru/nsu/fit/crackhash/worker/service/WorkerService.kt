@@ -1,7 +1,7 @@
 package ru.nsu.fit.crackhash.worker.service
 
-import ru.nsu.fit.crackhash.worker.model.dto.CrackRequestDto
+import ru.nsu.fit.crackhash.worker.model.dto.WorkerTaskDto
 
 interface WorkerService {
-    fun takeTask(crackRequest: CrackRequestDto)
+    fun takeTask(crackRequest: WorkerTaskDto)
 }

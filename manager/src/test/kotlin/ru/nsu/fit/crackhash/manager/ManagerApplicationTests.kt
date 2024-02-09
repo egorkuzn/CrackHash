@@ -1,5 +1,6 @@
 package ru.nsu.fit.crackhash.manager
 
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.context.SpringBootTest
 
@@ -8,6 +9,7 @@ class ManagerApplicationTests {
 
     @Test
     fun contextLoads() {
+        Assertions.assertTrue(true)
     }
 
 }

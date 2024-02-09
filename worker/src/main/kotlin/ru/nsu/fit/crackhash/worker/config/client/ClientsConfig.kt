@@ -1,4 +1,4 @@
-package ru.nsu.fit.crackhash.worker.config.scheduler
+package ru.nsu.fit.crackhash.worker.config.client
 
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
@@ -11,7 +11,7 @@ import ru.nsu.fit.crackhash.worker.manager.ManagerApi
 @Configuration
 class ClientsConfig(
     @Value("\${manager.url}")
-    private val url: String,
+    private val url: String
 ) {
     @Bean
     fun getManager() =

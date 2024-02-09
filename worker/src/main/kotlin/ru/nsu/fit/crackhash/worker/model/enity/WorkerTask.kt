@@ -1,6 +1,6 @@
 package ru.nsu.fit.crackhash.worker.model.enity
 
-import ru.nsu.fit.crackhash.worker.model.dto.CrackRequestDto
+import ru.nsu.fit.crackhash.worker.model.dto.WorkerTaskDto
 
 data class WorkerTask (
     val hash: String,
@@ -9,7 +9,7 @@ data class WorkerTask (
     val partNumber: Int,
     val partCount: Int
 ) {
-    constructor(crackRequest: CrackRequestDto) : this(
+    constructor(crackRequest: WorkerTaskDto) : this(
         crackRequest.hash,
         crackRequest.maxLength,
         crackRequest.requestId,

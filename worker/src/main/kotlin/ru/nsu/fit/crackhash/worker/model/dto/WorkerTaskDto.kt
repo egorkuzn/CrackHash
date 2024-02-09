@@ -1,6 +1,6 @@
-package ru.nsu.fit.crackhash.manager.model.dto
+package ru.nsu.fit.crackhash.worker.model.dto
 
-data class WorkerRequestDto (
+data class WorkerTaskDto(
     val hash: String,
     val maxLength: Int,
     val requestId: String,

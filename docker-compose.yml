@@ -2,25 +2,24 @@ version: '3.3'
 
 services:
   crackhash-manager:
-    build: ./manager
+    build: ./manager/
     networks:
       - crackhash
     env_file:
       - .env
     ports:
       - "10010:80"
-  crackhash-worker-one:
-    build: ./worker
+    restart: always
+  crackhash-worker:
+    build: ./worker/
     networks:
       - crackhash
     env_file:
       - .env
-  crackhash-worker-two:
-    build: ./worker
-    networks:
-      - crackhash
-    env_file:
-      - .env
+    deploy:
+      mode: replicated
+      replicas: 4
+    restart: always
 
 networks:
   crackhash:

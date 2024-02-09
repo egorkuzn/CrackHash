@@ -2,10 +2,10 @@ package ru.nsu.fit.crackhash.manager.worker
 
 import retrofit2.http.Body
 import retrofit2.http.PATCH
-import ru.nsu.fit.crackhash.manager.model.dto.WorkerRequestDto
+import ru.nsu.fit.crackhash.manager.model.dto.WorkerTaskDto
 
 
 interface WorkerApi {
     @PATCH("worker/hash/crack/task")
-    fun giveTask(@Body crackRequest: WorkerRequestDto)
+    fun giveTask(@Body crackRequest: WorkerTaskDto)
 }
