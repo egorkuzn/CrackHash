@@ -2,6 +2,7 @@ package ru.nsu.fit.crackhash.manager.service.impl
 
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import ru.nsu.fit.crackhash.manager.model.dto.WorkerTaskDto
@@ -17,7 +18,7 @@ class SendServiceImpl(
     private val workers: List<WorkerEntity>,
     private val taskRepo: TaskRepo,
 ) : SendService {
-    override suspend fun execute() = coroutineScope {
+    override fun execute() = runBlocking {
         val task = taskRepo.takeTask()
 
         workers.forEach {

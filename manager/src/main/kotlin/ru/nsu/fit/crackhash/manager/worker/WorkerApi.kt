@@ -7,5 +7,5 @@ import ru.nsu.fit.crackhash.manager.model.dto.WorkerTaskDto
 
 interface WorkerApi {
     @PATCH("worker/hash/crack/task")
-    fun giveTask(@Body crackRequest: WorkerTaskDto)
+    suspend fun giveTask(@Body crackRequest: WorkerTaskDto): Nothing
 }
