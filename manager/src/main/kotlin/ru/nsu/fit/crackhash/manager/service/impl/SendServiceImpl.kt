@@ -1,6 +1,5 @@
 package ru.nsu.fit.crackhash.manager.service.impl
 
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.springframework.beans.factory.annotation.Value
@@ -9,7 +8,6 @@ import ru.nsu.fit.crackhash.manager.model.dto.WorkerTaskDto
 import ru.nsu.fit.crackhash.manager.model.entity.WorkerEntity
 import ru.nsu.fit.crackhash.manager.repo.TaskRepo
 import ru.nsu.fit.crackhash.manager.service.SendService
-import ru.nsu.fit.crackhash.manager.worker.WorkerApi
 
 @Service
 class SendServiceImpl(
