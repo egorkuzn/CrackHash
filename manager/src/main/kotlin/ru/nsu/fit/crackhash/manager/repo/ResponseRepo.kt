@@ -15,10 +15,10 @@ class ResponseRepo {
 
     operator fun get(key: String) = responseRepo[key]
 
-    fun putAll(response: Map<String, Array<String>>) {
-        response.forEach {
-            responseRepo.merge(it.key, it.value, mergeFunction)
-            responseDelayCount.merge(it.key, 1, Int::minus)
+    fun putAll(response: Pair<String, Array<String>>) {
+        response.let {
+            responseRepo.merge(it.first, it.second, mergeFunction)
+            responseDelayCount.merge(it.first, 1, Int::minus)
         }
     }
 

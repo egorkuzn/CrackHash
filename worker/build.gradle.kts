@@ -20,7 +20,9 @@ repositories {
 
 dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect")
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.github.dpaukov:combinatoricslib3:3.3.3")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")

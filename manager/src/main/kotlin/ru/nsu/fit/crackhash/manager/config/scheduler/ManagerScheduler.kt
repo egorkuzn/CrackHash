@@ -13,7 +13,6 @@ import ru.nsu.fit.crackhash.manager.service.SendService
 class ManagerScheduler(
     private val sendService: SendService
 ) {
-
     @Async
     @Scheduled(cron = "\${workers.scheduler.interval}")
     fun sendToWorkers() {

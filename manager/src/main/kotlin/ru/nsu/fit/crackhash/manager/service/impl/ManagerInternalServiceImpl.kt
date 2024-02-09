@@ -6,7 +6,7 @@ import ru.nsu.fit.crackhash.manager.service.ManagerInternalService
 
 @Service
 class ManagerInternalServiceImpl(private val responseRepo: ResponseRepo): ManagerInternalService {
-    override fun crackRequest(request: Map<String, Array<String>>) {
+    override fun crackRequest(request: Pair<String, Array<String>>) {
         responseRepo.putAll(request)
     }
 }

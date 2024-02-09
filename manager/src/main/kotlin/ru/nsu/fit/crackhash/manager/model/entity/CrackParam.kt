@@ -6,6 +6,8 @@ data class CrackParam (
     val hash: String,
     val maxLength: Int
 ) {
-    constructor(crackRequestDto: CrackRequestDto): this(crackRequestDto.hash, crackRequestDto.maxLength)
-
+    constructor(crackRequestDto: CrackRequestDto): this(
+        crackRequestDto.hash,
+        crackRequestDto.maxLength
+    )
 }

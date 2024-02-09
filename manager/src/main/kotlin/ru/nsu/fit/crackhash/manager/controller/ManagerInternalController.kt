@@ -9,5 +9,5 @@ import ru.nsu.fit.crackhash.manager.service.ManagerInternalService
 @RequestMapping("/internal/api/manager/hash/crack/request")
 class ManagerInternalController(private val managerInternalService: ManagerInternalService) {
     @PatchMapping
-    fun crackRequest(request: Map<String, Array<String>>) = managerInternalService.crackRequest(request)
+    fun crackRequest(request: Pair<String, Array<String>>) = managerInternalService.crackRequest(request)
 }

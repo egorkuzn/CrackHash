@@ -7,24 +7,30 @@ import ru.nsu.fit.crackhash.manager.model.dto.WorkerRequestDto
 import ru.nsu.fit.crackhash.manager.repo.TaskRepo
 import ru.nsu.fit.crackhash.manager.service.SendService
 import ru.nsu.fit.crackhash.manager.worker.WorkerApi
+import java.util.concurrent.ConcurrentHashMap
 
 @Service
 class SendServiceImpl(
     private val workers: List<WorkerApi>,
-    private val taskRepo: TaskRepo
-): SendService {
-    override fun execute() = runBlocking {
-        val task = taskRepo.takeDerivedTask()
+    private val taskRepo: TaskRepo,
+) : SendService {
+    private val freeWorkersMap = ConcurrentHashMap<WorkerApi, Boolean>()
 
-        task.execute { worker, partNumber, partCount, task, requestId ->
+    override fun execute() = runBlocking {
+        val task = taskRepo.takeTask()
+
+        var count = 0
+        workers.associateBy { count++ }.forEach {
             launch {
-                worker.giveTask(WorkerRequestDto(
-                    task.hash,
-                    task.maxLength,
-                    requestId,
-                    partNumber,
-                    partCount
-                ))
+                it.value.giveTask(
+                    WorkerRequestDto(
+                        task.hash,
+                        task.maxLength,
+                        task.requestId,
+                        it.key,
+                        workers.size
+                    )
+                )
             }
         }
     }

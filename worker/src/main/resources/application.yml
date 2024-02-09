@@ -1,1 +1,1 @@
-scheduler.interval: "*/20 * * * * *"
+manager.url: $MANAGER_URL
