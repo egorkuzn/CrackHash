@@ -6,34 +6,36 @@ import org.slf4j.Logger
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import ru.nsu.fit.crackhash.manager.model.dto.WorkerTaskDto
+import ru.nsu.fit.crackhash.manager.model.entity.WorkerEntity
 import ru.nsu.fit.crackhash.manager.repo.TaskRepo
 import ru.nsu.fit.crackhash.manager.service.SendService
-import ru.nsu.fit.crackhash.manager.worker.WorkerApi
 
 @Service
 class SendServiceImpl(
     @Value("\${workers.count}")
     private val partCount: Int,
-    private val worker: WorkerApi,
+    private val workers: List<WorkerEntity>,
     private val taskRepo: TaskRepo,
-    private val logger: Logger
+    private val logger: Logger,
 ) : SendService {
     override fun execute() = runBlocking {
         val task = taskRepo.takeTask()
 
-        (1..partCount).forEach { partNumber ->
-            launch {
-                logger.info("Sending [$partNumber|$partCount] ${task.requestId}")
-                worker.takeTask(
-                    WorkerTaskDto(
-                        task.hash,
-                        task.maxLength,
-                        task.requestId,
-                        partNumber,
-                        partCount
+        workers.forEach { worker ->
+            worker.run {
+                launch {
+                    logger.info("Sending [$partNumber|$partCount] ${task.requestId}")
+                    client.takeTask(
+                        WorkerTaskDto(
+                            task.hash,
+                            task.maxLength,
+                            task.requestId,
+                            partNumber,
+                            partCount
+                        )
                     )
-                )
-                logger.info("Sent [$partNumber|$partCount] ${task.requestId}")
+                    logger.info("Sent [$partNumber|$partCount] ${task.requestId}")
+                }
             }
         }
     }

@@ -9,17 +9,51 @@ services:
       - .env
     ports:
       - "10010:80"
-    restart: always
-  crackhash-worker:
+    restart: on-failure
+  crackhash-worker-1:
     build: ./worker/
     networks:
       - crackhash
     env_file:
       - .env
-    deploy:
-      mode: replicated
-      replicas: 4
-    restart: always
+    #    deploy:
+    #      mode: replicated
+    #      replicas: 4
+    #      endpoint_mode: dnsrr
+    restart: on-failure
+  crackhash-worker-2:
+    build: ./worker/
+    networks:
+      - crackhash
+    env_file:
+      - .env
+    #    deploy:
+    #      mode: replicated
+    #      replicas: 4
+    #      endpoint_mode: dnsrr
+    restart: on-failure
+  crackhash-worker-3:
+    build: ./worker/
+    networks:
+      - crackhash
+    env_file:
+      - .env
+    #    deploy:
+    #      mode: replicated
+    #      replicas: 4
+    #      endpoint_mode: dnsrr
+    restart: on-failure
+  crackhash-worker-4:
+    build: ./worker/
+    networks:
+      - crackhash
+    env_file:
+      - .env
+    #    deploy:
+    #      mode: replicated
+    #      replicas: 4
+    #      endpoint_mode: dnsrr
+    restart: on-failure
 
 networks:
   crackhash:

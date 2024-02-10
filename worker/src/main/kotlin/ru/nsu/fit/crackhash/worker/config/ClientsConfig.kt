@@ -16,7 +16,7 @@ class ClientsConfig(
     @Bean
     fun getManager() =
         Retrofit.Builder()
-            .baseUrl("$url:80/internal/api/")
+            .baseUrl("$url/internal/api/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create() as ManagerApi
