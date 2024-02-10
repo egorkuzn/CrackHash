@@ -10,7 +10,7 @@ class ResponseRepo {
     private val responseDelayCount = ConcurrentHashMap<String, Int>()
 
     private val mergeFunction: (a: Array<String>, b: Array<String>) -> Array<String> = {
-            a, b -> if (b.isNotEmpty()) a + b else a
+            a, b -> a + b
     }
 
     operator fun get(key: String) = responseRepo[key]
@@ -24,6 +24,7 @@ class ResponseRepo {
 
     fun setDelayCountForResponse(it: String, size: Int) {
         responseDelayCount[it] = size
+        responseRepo[it] = emptyArray()
     }
 
     fun isFinished(requestId: String) = responseDelayCount[requestId] == 0
