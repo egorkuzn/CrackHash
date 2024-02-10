@@ -7,6 +7,7 @@ import org.paukov.combinatorics3.Generator
 import org.slf4j.Logger
 import org.springframework.stereotype.Service
 import ru.nsu.fit.crackhash.worker.manager.ManagerApi
+import ru.nsu.fit.crackhash.worker.model.dto.WorkerResponseDto
 import ru.nsu.fit.crackhash.worker.model.enity.WorkerTask
 import ru.nsu.fit.crackhash.worker.service.TaskExecutorService
 import java.security.MessageDigest
@@ -19,7 +20,13 @@ class TaskExecutorServiceImpl(
     @OptIn(DelicateCoroutinesApi::class)
     override fun takeNewTask(workerTask: WorkerTask) {
         GlobalScope.launch {
-            manager.sendTaskResult(workerTask.requestId to executeTask(workerTask))
+            manager.sendTaskResult(
+                WorkerResponseDto(
+                    workerTask.requestId,
+                    executeTask(workerTask)
+                )
+            )
+
             workerTask.apply { logger.info("Task [$partNumber|$partCount]#$requestId finished") }
         }
     }
@@ -37,7 +44,7 @@ class TaskExecutorServiceImpl(
             .filter { hash(String(it.toCharArray())) == workerTask.hash }
             .map { String(it.toCharArray()) }
             .peek{ workerTask.apply { logger.info("Task [$partNumber|$partCount]#$requestId found $it") } }
-            .toList().toTypedArray()
+            .toList().filterNotNull().toTypedArray()
     }
 
     private val md5 = MessageDigest.getInstance("MD5")

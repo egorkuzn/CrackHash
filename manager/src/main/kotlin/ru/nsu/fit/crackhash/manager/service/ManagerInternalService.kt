@@ -1,5 +1,7 @@
 package ru.nsu.fit.crackhash.manager.service
 
+import ru.nsu.fit.crackhash.manager.model.dto.WorkerResponseDto
+
 interface ManagerInternalService {
-    fun crackRequest(request: Pair<String, Array<String>>)
+    fun crackRequest(request: WorkerResponseDto)
 }
