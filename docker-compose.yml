@@ -27,10 +27,6 @@ services:
       - crackhash
     env_file:
       - .env
-    #    deploy:
-    #      mode: replicated
-    #      replicas: 4
-    #      endpoint_mode: dnsrr
     restart: on-failure
   crackhash-worker-3:
     build: ./worker/
@@ -38,10 +34,6 @@ services:
       - crackhash
     env_file:
       - .env
-    #    deploy:
-    #      mode: replicated
-    #      replicas: 4
-    #      endpoint_mode: dnsrr
     restart: on-failure
   crackhash-worker-4:
     build: ./worker/
@@ -49,10 +41,6 @@ services:
       - crackhash
     env_file:
       - .env
-    #    deploy:
-    #      mode: replicated
-    #      replicas: 4
-    #      endpoint_mode: dnsrr
     restart: on-failure
 
 networks:

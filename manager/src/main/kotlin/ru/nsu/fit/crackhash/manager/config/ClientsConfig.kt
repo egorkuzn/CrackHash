@@ -16,6 +16,9 @@ class ClientsConfig(
     @Value("\${workers.count}")
     private val workersCount: Int
 ) {
+    /**
+     * Generation of workers' client group.
+     */
     @Bean
     fun getWorkers() = (1..workersCount).map {
         WorkerEntity(

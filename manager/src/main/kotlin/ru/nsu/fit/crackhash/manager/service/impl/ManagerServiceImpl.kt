@@ -26,16 +26,20 @@ class ManagerServiceImpl(
 ) : ManagerService {
     @OptIn(DelicateCoroutinesApi::class)
     override fun crack(crackRequest: CrackRequestDto) = CrackResponseDto(
-        requestId = newRequestId().let {
-            GlobalScope.launch {
-                taskRepo[it] = CrackParam(crackRequest)
-                responseRepo.setDelayCountForResponse(it, partCount)
-                sendService.execute()
-            }
-
-            it
+        requestId = newRequestId().also {
+            GlobalScope.launch { takeInWork(it, crackRequest, partCount) }
         }
     )
+
+    private fun takeInWork(
+        requestId: String,
+        crackRequest: CrackRequestDto,
+        partCount: Int,
+    ) {
+        taskRepo[requestId] = CrackParam(crackRequest)
+        responseRepo.prepareForResponse(requestId, partCount)
+        sendService.execute()
+    }
 
     private fun newRequestId() = UUID.randomUUID().toString()
 
