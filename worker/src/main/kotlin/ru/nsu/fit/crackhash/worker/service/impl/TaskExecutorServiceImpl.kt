@@ -22,8 +22,9 @@ class TaskExecutorServiceImpl(
         GlobalScope.launch {
             manager.sendTaskResult(
                 WorkerResponseDto(
+                    workerTask.partNumber,
                     workerTask.requestId,
-                    executeTask(workerTask)
+                    executeTask(workerTask).filter { it.isNotEmpty() }
                 )
             )
 
@@ -31,7 +32,7 @@ class TaskExecutorServiceImpl(
         }
     }
 
-    private fun executeTask(workerTask: WorkerTask): Array<String> {
+    private fun executeTask(workerTask: WorkerTask): List<String> {
         var counter = 0
 
         workerTask.apply { logger.info("Task [$partNumber|$partCount]#$requestId started") }
@@ -44,7 +45,8 @@ class TaskExecutorServiceImpl(
             .filter { hash(String(it.toCharArray())) == workerTask.hash }
             .map { String(it.toCharArray()) }
             .peek { workerTask.apply { logger.info("Task [$partNumber|$partCount]#$requestId found $it") } }
-            .toList().filterNotNull().toTypedArray()
+            .distinct()
+            .toList()
     }
 
     private fun hash(generation: String) = DigestUtils.md5DigestAsHex(generation.toByteArray())

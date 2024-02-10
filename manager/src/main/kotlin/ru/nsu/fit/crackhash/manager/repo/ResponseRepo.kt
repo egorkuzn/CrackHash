@@ -19,8 +19,8 @@ class ResponseRepo(private val logger: Logger) {
 
     fun putAll(response: WorkerResponseDto) {
         response.run {
-            if (value != null && value.isNotEmpty())
-                responseRepo.merge(responseId, value, mergeFunction)
+            if (value != listOf("***"))
+                responseRepo.merge(responseId, value.toTypedArray(), mergeFunction)
 
             responseDelayCount.merge(responseId, 1, Int::minus)
         }
