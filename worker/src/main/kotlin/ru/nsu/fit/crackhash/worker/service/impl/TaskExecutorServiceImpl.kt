@@ -20,31 +20,45 @@ class TaskExecutorServiceImpl(
     @OptIn(DelicateCoroutinesApi::class)
     override fun takeNewTask(workerTask: WorkerTask) {
         GlobalScope.launch {
+            val loggerBase = workerTask.run { "Task [$partNumber|$partCount]#$requestId" }
+
             manager.sendTaskResult(
                 WorkerResponseDto(
                     workerTask.partNumber,
                     workerTask.requestId,
-                    executeTask(workerTask).filter { it.isNotEmpty() }
+                    executeTask(workerTask, loggerBase)
                 )
             )
 
-            workerTask.apply { logger.info("Task [$partNumber|$partCount]#$requestId finished") }
+            logger.info("$loggerBase finished")
         }
     }
 
-    private fun executeTask(workerTask: WorkerTask): List<String> {
+    private fun executeTask(workerTask: WorkerTask, loggerBase: String): List<String> {
+        workerTask.apply { logger.info("$loggerBase started") }
+
+        return (1..workerTask.maxLength).flatMap {
+            workerTask.apply { logger.info("$loggerBase running $it/${workerTask.maxLength} symbols") }
+            crackForFixedLength(it, workerTask, loggerBase)
+        }
+    }
+
+    private fun crackForFixedLength(
+        length: Int,
+        workerTask: WorkerTask,
+        loggerBase: String,
+    ): List<String> {
         var counter = 0
 
-        workerTask.apply { logger.info("Task [$partNumber|$partCount]#$requestId started") }
         return Generator.permutation(
             ('0'..'9') + ('a'..'z') + ('A'..'Z')
-        ).withRepetitions(workerTask.maxLength)
+        ).withRepetitions(length)
             .stream()
             .skip(workerTask.partNumber.toLong())
             .filter { counter++ % workerTask.partCount == 0 }
             .filter { hash(String(it.toCharArray())) == workerTask.hash }
             .map { String(it.toCharArray()) }
-            .peek { workerTask.apply { logger.info("Task [$partNumber|$partCount]#$requestId found $it") } }
+            .peek { workerTask.apply { logger.info("$loggerBase found '$it'") } }
             .distinct()
             .toList()
     }
