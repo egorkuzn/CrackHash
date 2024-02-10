@@ -12,7 +12,7 @@ class ManagerInternalServiceImpl(
     private val responseRepo: ResponseRepo
 ): ManagerInternalService {
     override fun crackRequest(response: WorkerResponseDto) {
-        logger.info("Got result of ${response.responseId}")
+        logger.info("Got result of ${if (response.responseId != "null") response.responseId else "null"}")
         responseRepo.putAll(response)
     }
 }

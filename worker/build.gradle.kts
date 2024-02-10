@@ -19,6 +19,7 @@ repositories {
 }
 
 dependencies {
+    implementation("commons-codec:commons-codec:1.16.1")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.github.dpaukov:combinatoricslib3:3.3.3")
