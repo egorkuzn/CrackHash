@@ -1,4 +1,4 @@
-package ru.nsu.fit.crackhash.worker.config.client
+package ru.nsu.fit.crackhash.worker.config
 
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
@@ -16,7 +16,7 @@ class ClientsConfig(
     @Bean
     fun getManager() =
         Retrofit.Builder()
-            .baseUrl("$url/internal/api/")
+            .baseUrl("$url:80/internal/api/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create() as ManagerApi
