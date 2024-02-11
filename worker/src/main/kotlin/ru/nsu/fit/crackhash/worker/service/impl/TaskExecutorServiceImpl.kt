@@ -1,9 +1,6 @@
 package ru.nsu.fit.crackhash.worker.service.impl
 
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withTimeoutOrNull
+import kotlinx.coroutines.*
 import org.paukov.combinatorics3.Generator
 import org.slf4j.Logger
 import org.springframework.beans.factory.annotation.Value
@@ -18,7 +15,7 @@ import kotlin.time.toDuration
 
 @Service
 class TaskExecutorServiceImpl(
-    @Value("\${timeout}")
+    @Value("\${manager.timeout}")
     private val timeoutMinutes: Long,
     private val logger: Logger,
     private val manager: ManagerApi,
@@ -27,7 +24,7 @@ class TaskExecutorServiceImpl(
     override fun takeNewTask(workerTask: WorkerTask) {
         GlobalScope.launch {
             val loggerBase = workerTask.run { "Task [$partNumber|$partCount]#$requestId" }
-            val res = withTimeoutOrNull(timeoutMinutes.millis()) {
+            val res = withTimeoutOrNull(timeoutMinutes.toDuration(DurationUnit.MINUTES)) {
                 executeTask(workerTask, loggerBase)
             }
 
@@ -44,8 +41,6 @@ class TaskExecutorServiceImpl(
             logger.info("$loggerBase finished $crackResultStatus")
         }
     }
-
-    private fun Long.millis() = this.toDuration(DurationUnit.MINUTES).inWholeMilliseconds
 
     private fun executeTask(workerTask: WorkerTask, loggerBase: String): List<String> {
         workerTask.apply { logger.info("$loggerBase started") }
