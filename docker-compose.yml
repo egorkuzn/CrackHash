@@ -4,7 +4,7 @@ services:
   crackhash-manager:
     env_file:
       - .env
-    build: ./manager/
+    image: 1c3bb3a3421d67ad018c15bb4ed1a9c2b4edd76ae081883dfb6a69b13163ace3
     networks:
       - crackhash
     ports:

@@ -1,16 +1,18 @@
 package ru.nsu.fit.crackhash.worker.service.impl
 
 import kotlinx.coroutines.*
+import kotlinx.coroutines.future.asCompletableFuture
+import kotlinx.coroutines.time.withTimeoutOrNull
 import org.paukov.combinatorics3.Generator
 import org.slf4j.Logger
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.util.DigestUtils
-import ru.nsu.fit.crackhash.worker.exception.WorkerRuntimeException
 import ru.nsu.fit.crackhash.worker.manager.ManagerApi
 import ru.nsu.fit.crackhash.worker.model.dto.WorkerResponseDto
 import ru.nsu.fit.crackhash.worker.model.enity.WorkerTask
 import ru.nsu.fit.crackhash.worker.service.TaskExecutorService
+import java.util.concurrent.TimeUnit
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
@@ -26,13 +28,10 @@ class TaskExecutorServiceImpl(
     override fun takeNewTask(workerTask: WorkerTask) {
         taskExecutorScope.launch {
             val loggerBase = workerTask.run { "Task [$partNumber|$partCount]#$requestId" }
-            val res = withTimeoutOrNull(timeoutMinutes.toDuration(DurationUnit.MINUTES)) {
-                try {
-                    executeTask(workerTask, loggerBase)
-                } catch (e: WorkerRuntimeException) {
-                    null
-                }
-            }
+
+            val res = async { executeTask(workerTask, loggerBase) }.asCompletableFuture()
+                .completeOnTimeout(null, timeoutMinutes, TimeUnit.MINUTES)
+                .get()
 
             manager.sendTaskResult(
                 WorkerResponseDto(
@@ -48,11 +47,9 @@ class TaskExecutorServiceImpl(
         }
     }
 
-    private suspend fun executeTask(workerTask: WorkerTask, loggerBase: String): List<String> {
+    private fun executeTask(workerTask: WorkerTask, loggerBase: String): List<String> {
         workerTask.apply { logger.info("$loggerBase started") }
-
         return (1..workerTask.maxLength).flatMap {
-            yield()
             workerTask.apply { logger.info("$loggerBase running $it/${workerTask.maxLength} symbols") }
             crackForFixedLength(it, workerTask, loggerBase)
         }
@@ -78,8 +75,5 @@ class TaskExecutorServiceImpl(
             .toList()
     }
 
-    private fun hash(generation: String): String {
-        if (!taskExecutorScope.isActive) throw WorkerRuntimeException()
-        return DigestUtils.md5DigestAsHex(generation.toByteArray())
-    }
+    private fun hash(generation: String) = DigestUtils.md5DigestAsHex(generation.toByteArray())
 }
