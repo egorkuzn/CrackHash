@@ -6,6 +6,7 @@ import org.slf4j.Logger
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.util.DigestUtils
+import ru.nsu.fit.crackhash.worker.exception.WorkerRuntimeException
 import ru.nsu.fit.crackhash.worker.manager.ManagerApi
 import ru.nsu.fit.crackhash.worker.model.dto.WorkerResponseDto
 import ru.nsu.fit.crackhash.worker.model.enity.WorkerTask
@@ -20,12 +21,17 @@ class TaskExecutorServiceImpl(
     private val logger: Logger,
     private val manager: ManagerApi,
 ) : TaskExecutorService {
-    @OptIn(DelicateCoroutinesApi::class)
+    val taskExecutorScope = CoroutineScope(Dispatchers.Default)
+
     override fun takeNewTask(workerTask: WorkerTask) {
-        GlobalScope.launch {
+        taskExecutorScope.launch {
             val loggerBase = workerTask.run { "Task [$partNumber|$partCount]#$requestId" }
             val res = withTimeoutOrNull(timeoutMinutes.toDuration(DurationUnit.MINUTES)) {
-                suspendCancellableCoroutine<List<String>> { executeTask(workerTask, loggerBase) }
+                try {
+                    executeTask(workerTask, loggerBase)
+                } catch (e: WorkerRuntimeException) {
+                    null
+                }
             }
 
             manager.sendTaskResult(
@@ -42,10 +48,11 @@ class TaskExecutorServiceImpl(
         }
     }
 
-    private fun executeTask(workerTask: WorkerTask, loggerBase: String) {
+    private suspend fun executeTask(workerTask: WorkerTask, loggerBase: String): List<String> {
         workerTask.apply { logger.info("$loggerBase started") }
 
-        (1..workerTask.maxLength).flatMap {
+        return (1..workerTask.maxLength).flatMap {
+            yield()
             workerTask.apply { logger.info("$loggerBase running $it/${workerTask.maxLength} symbols") }
             crackForFixedLength(it, workerTask, loggerBase)
         }
@@ -71,5 +78,8 @@ class TaskExecutorServiceImpl(
             .toList()
     }
 
-    private fun hash(generation: String) = DigestUtils.md5DigestAsHex(generation.toByteArray())
+    private fun hash(generation: String): String {
+        if (!taskExecutorScope.isActive) throw WorkerRuntimeException()
+        return DigestUtils.md5DigestAsHex(generation.toByteArray())
+    }
 }
