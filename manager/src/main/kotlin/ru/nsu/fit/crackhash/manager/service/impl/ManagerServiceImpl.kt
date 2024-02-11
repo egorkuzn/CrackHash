@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import ru.nsu.fit.crackhash.manager.model.dto.CrackRequestDto
 import ru.nsu.fit.crackhash.manager.model.dto.CrackResponseDto
+import ru.nsu.fit.crackhash.manager.model.dto.Status
 import ru.nsu.fit.crackhash.manager.model.dto.StatusResposeDto
 import ru.nsu.fit.crackhash.manager.model.entity.CrackParam
 import ru.nsu.fit.crackhash.manager.repo.TaskRepo
@@ -42,8 +43,10 @@ class ManagerServiceImpl(
     private fun newRequestId() = UUID.randomUUID().toString()
 
     override fun status(requestId: String) =
-        StatusResposeDto(
-            responseService.responseStatus(requestId),
-            responseService[requestId]
-        )
+        responseService.responseStatus(requestId).let {
+            StatusResposeDto(
+                it,
+                if (it == Status.READY) responseService[requestId] else null
+            )
+        }
 }

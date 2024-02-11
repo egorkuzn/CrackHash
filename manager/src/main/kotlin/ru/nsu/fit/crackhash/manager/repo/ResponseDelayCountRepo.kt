@@ -40,7 +40,7 @@ class ResponseDelayCountRepo(
     private fun isTimeout(
         current: Pair<Int?, LocalDateTime>,
         newVal: Pair<Int?, LocalDateTime>,
-    ) = Duration.between(newVal.second, current.second).toMinutes() > timeout
+    ) = Duration.between(current.second, newVal.second).toMinutes() >= timeout
 
     fun merge(requestId: String, value: Pair<Int?, LocalDateTime>) =
         responseDelayCount.merge(requestId, value, mergeDelayFunction)

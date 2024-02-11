@@ -37,6 +37,7 @@ FROM eclipse-temurin:21-jdk-alpine
 #
 ARG BUILD_HOME
 ENV APP_HOME=$BUILD_HOME
+WORKDIR /opt/app
 COPY --from=build-image $APP_HOME/build/libs/*.jar app.jar
 
 #

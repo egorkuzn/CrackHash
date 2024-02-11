@@ -1,4 +1,4 @@
 workers:
-  base_url: ${WORKER_BASE_URL:http://crackhash-worker}
-  count: ${WORKERS_COUNT:4}
-  timeout: ${TIMEOUT:15}
+  base_url: ${WORKER_BASE_URL}
+  count: ${WORKERS_COUNT}
+  timeout: ${TIMEOUT}

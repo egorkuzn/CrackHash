@@ -2,45 +2,45 @@ version: '3.3'
 
 services:
   crackhash-manager:
+    env_file:
+      - .env
     build: ./manager/
     networks:
       - crackhash
-    env_file:
-      - .env
     ports:
       - "10010:80"
     restart: on-failure
   crackhash-worker-1:
+    env_file:
+      - .env
     build: ./worker/
     networks:
       - crackhash
-    env_file:
-      - .env
     #    deploy:
     #      mode: replicated
     #      replicas: 4
     #      endpoint_mode: dnsrr
     restart: on-failure
   crackhash-worker-2:
+    env_file:
+      - .env
     build: ./worker/
     networks:
       - crackhash
-    env_file:
-      - .env
     restart: on-failure
   crackhash-worker-3:
+    env_file:
+      - .env
     build: ./worker/
     networks:
       - crackhash
-    env_file:
-      - .env
     restart: on-failure
   crackhash-worker-4:
+    env_file:
+      - .env
     build: ./worker/
     networks:
       - crackhash
-    env_file:
-      - .env
     restart: on-failure
 
 networks:
