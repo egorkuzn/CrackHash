@@ -1,8 +1,6 @@
 package ru.nsu.fit.crackhash.manager.service.impl
 
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import ru.nsu.fit.crackhash.manager.model.dto.CrackRequestDto
@@ -23,10 +21,11 @@ class ManagerServiceImpl(
     private val sendService: SendService,
     private val responseService: ResponseService,
 ) : ManagerService {
-    @OptIn(DelicateCoroutinesApi::class)
+    val managerCoroutineScope = CoroutineScope(Dispatchers.Default)
+
     override fun crack(crackRequest: CrackRequestDto) = CrackResponseDto(
         requestId = newRequestId().also {
-            GlobalScope.launch { takeInWork(it, crackRequest, partCount) }
+            managerCoroutineScope.launch { takeInWork(it, crackRequest, partCount) }
         }
     )
 

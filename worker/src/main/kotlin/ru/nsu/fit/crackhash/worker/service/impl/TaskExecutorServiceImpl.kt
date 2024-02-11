@@ -1,8 +1,10 @@
 package ru.nsu.fit.crackhash.worker.service.impl
 
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.future.asCompletableFuture
-import kotlinx.coroutines.time.withTimeoutOrNull
+import kotlinx.coroutines.launch
 import org.paukov.combinatorics3.Generator
 import org.slf4j.Logger
 import org.springframework.beans.factory.annotation.Value
@@ -13,8 +15,6 @@ import ru.nsu.fit.crackhash.worker.model.dto.WorkerResponseDto
 import ru.nsu.fit.crackhash.worker.model.enity.WorkerTask
 import ru.nsu.fit.crackhash.worker.service.TaskExecutorService
 import java.util.concurrent.TimeUnit
-import kotlin.time.DurationUnit
-import kotlin.time.toDuration
 
 @Service
 class TaskExecutorServiceImpl(

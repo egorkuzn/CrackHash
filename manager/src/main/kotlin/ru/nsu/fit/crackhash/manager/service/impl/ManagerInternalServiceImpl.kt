@@ -1,8 +1,6 @@
 package ru.nsu.fit.crackhash.manager.service.impl
 
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import org.slf4j.Logger
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
@@ -16,7 +14,8 @@ class ManagerInternalServiceImpl(
     private val logger: Logger,
     private val responseService: ResponseService,
 ) : ManagerInternalService {
-    @OptIn(DelicateCoroutinesApi::class)
+    val managerInternalCoroutineScope = CoroutineScope(Dispatchers.Default)
+
     override fun crackRequest(response: WorkerResponseDto) {
         if (isTimeout(response)) {
             logger.info("Got result [${response.partNumber}|$partCount] of ${response.requestId} TIMEOUT")
@@ -24,9 +23,8 @@ class ManagerInternalServiceImpl(
             return
         }
 
-
         logger.info("Got result [${response.partNumber}|$partCount] of ${response.requestId} SUCCESS")
-        GlobalScope.launch {
+        managerInternalCoroutineScope.launch {
             responseService.putAll(response)
         }
     }
