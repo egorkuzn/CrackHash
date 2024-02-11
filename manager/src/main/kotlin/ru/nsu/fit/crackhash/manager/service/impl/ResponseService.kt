@@ -8,7 +8,7 @@ import ru.nsu.fit.crackhash.manager.repo.ResponseResultRepo
 import java.time.LocalDateTime
 
 @Service
-class ResponseService (
+class ResponseService(
     private val responseResultRepo: ResponseResultRepo,
     private val responseDelayCountRepo: ResponseDelayCountRepo,
 ) {
@@ -28,7 +28,6 @@ class ResponseService (
      * Else you will get exception in putAll, when merge function want to make update by key.
      */
     fun prepareForResponse(it: String, size: Int) {
-        responseResultRepo[it] = emptyArray()
         responseDelayCountRepo[it] = size to LocalDateTime.now()
     }
 
@@ -36,10 +35,14 @@ class ResponseService (
         responseDelayCountRepo[requestId] = null to responseDelayCountRepo[requestId]!!.second
     }
 
-    fun responseStatus(requestId: String): Status {
+    /**
+     * Firstly, it should be checked: is it in queue.
+     * And then take status of response.
+     */
+    fun responseStatus(requestId: String) = responseDelayCountRepo[requestId]!!.let {
         update(requestId)
 
-        return when (responseDelayCountRepo[requestId]!!.first) {
+        when (it.first) {
             null -> Status.ERROR
             0 -> Status.READY
             else -> Status.IN_PROGRESS
