@@ -13,7 +13,7 @@ data class WorkerTask (
         crackRequest.hash,
         crackRequest.maxLength,
         crackRequest.requestId,
-        crackRequest.partCount,
+        crackRequest.partNumber,
         crackRequest.partCount
     )
 }
