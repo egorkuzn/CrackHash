@@ -40,17 +40,16 @@ class ResponseService(
      * And then take status of response.
      */
     fun responseStatus(requestId: String) = responseDelayCountRepo[requestId]!!.let {
-        update(requestId)
-
-        when (it.first) {
+        when (update(requestId).first) {
             null -> Status.ERROR
             0 -> Status.READY
             else -> Status.IN_PROGRESS
         }
     }
 
-    private fun update(requestId: String) {
+    private fun update(requestId: String): Pair<Int?, LocalDateTime> {
         responseDelayCountRepo.merge(requestId, 0 to LocalDateTime.now())
+        return responseDelayCountRepo[requestId]!!
     }
 
     operator fun get(requestId: String) = responseResultRepo[requestId]
