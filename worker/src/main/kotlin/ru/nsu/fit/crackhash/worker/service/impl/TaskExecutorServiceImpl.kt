@@ -25,7 +25,7 @@ class TaskExecutorServiceImpl(
         GlobalScope.launch {
             val loggerBase = workerTask.run { "Task [$partNumber|$partCount]#$requestId" }
             val res = withTimeoutOrNull(timeoutMinutes.toDuration(DurationUnit.MINUTES)) {
-                executeTask(workerTask, loggerBase)
+                suspendCancellableCoroutine<List<String>> { executeTask(workerTask, loggerBase) }
             }
 
             manager.sendTaskResult(
@@ -42,10 +42,10 @@ class TaskExecutorServiceImpl(
         }
     }
 
-    private fun executeTask(workerTask: WorkerTask, loggerBase: String): List<String> {
+    private fun executeTask(workerTask: WorkerTask, loggerBase: String) {
         workerTask.apply { logger.info("$loggerBase started") }
 
-        return (1..workerTask.maxLength).flatMap {
+        (1..workerTask.maxLength).flatMap {
             workerTask.apply { logger.info("$loggerBase running $it/${workerTask.maxLength} symbols") }
             crackForFixedLength(it, workerTask, loggerBase)
         }
