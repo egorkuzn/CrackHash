@@ -45,7 +45,7 @@ class TaskExecutorServiceImpl(
         }
     }
 
-    private fun Long.millis() = this.toDuration(DurationUnit.MILLISECONDS).inWholeMinutes
+    private fun Long.millis() = this.toDuration(DurationUnit.MINUTES).inWholeMilliseconds
 
     private fun executeTask(workerTask: WorkerTask, loggerBase: String): List<String> {
         workerTask.apply { logger.info("$loggerBase started") }

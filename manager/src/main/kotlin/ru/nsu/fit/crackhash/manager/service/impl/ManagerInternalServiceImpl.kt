@@ -31,5 +31,5 @@ class ManagerInternalServiceImpl(
         }
     }
 
-    private fun isTimeout(response: WorkerResponseDto) = response.value != null
+    private fun isTimeout(response: WorkerResponseDto) = response.value == null
 }
