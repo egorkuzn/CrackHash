@@ -1,1 +1,3 @@
-
+manager:
+  url: ${MANAGER_URL}
+  timeout: ${TIMEOUT}

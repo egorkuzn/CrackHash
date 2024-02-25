@@ -2,29 +2,48 @@ version: '3.3'
 
 services:
   crackhash-manager:
-    image: egorkuzn2002/crackhash-manager:latest
-    networks:
-      - crackhash-manager-network
-      - crackhash-worker-one-network
-      - crackhash-worker-two-network
     env_file:
       - .env
+    image: 1c3bb3a3421d67ad018c15bb4ed1a9c2b4edd76ae081883dfb6a69b13163ace3
+    networks:
+      - crackhash
     ports:
       - "10010:80"
-  crackhash-worker-one:
-    image: egorkuzn2002/crackhash-manager:latest
+    restart: on-failure
+  crackhash-worker-1:
+    env_file:
+      - .env
+    build: ./worker/
     networks:
-      - crackhash-worker-one-network
-  crackhash-worker-two:
-    image: egorkuzn2002/crackhash-manager:latest
+      - crackhash
+    #    deploy:
+    #      mode: replicated
+    #      replicas: 4
+    #      endpoint_mode: dnsrr
+    restart: on-failure
+  crackhash-worker-2:
+    env_file:
+      - .env
+    build: ./worker/
     networks:
-      - crackhash-worker-two-network
+      - crackhash
+    restart: on-failure
+  crackhash-worker-3:
+    env_file:
+      - .env
+    build: ./worker/
+    networks:
+      - crackhash
+    restart: on-failure
+  crackhash-worker-4:
+    env_file:
+      - .env
+    build: ./worker/
+    networks:
+      - crackhash
+    restart: on-failure
 
 networks:
-  crackhash-manager-network:
-    driver: bridge
-  crackhash-worker-one-network:
-    driver: bridge
-  crackhash-worker-two-network:
+  crackhash:
     driver: bridge
 

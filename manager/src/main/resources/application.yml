@@ -1,1 +1,4 @@
-workers.urs: $WORKERS_URLS
+workers:
+  base_url: ${WORKER_BASE_URL}
+  count: ${WORKERS_COUNT}
+  timeout: ${TIMEOUT}
