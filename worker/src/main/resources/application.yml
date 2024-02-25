@@ -1,3 +1,11 @@
 manager:
   url: ${MANAGER_URL}
   timeout: ${TIMEOUT}
+
+spring:
+  rabbitmq:
+    host: rabbitmq
+    port: 5672
+    username: notification
+    password: notification
+    virtual-host: notification

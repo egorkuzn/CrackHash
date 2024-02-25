@@ -2,3 +2,11 @@ workers:
   base_url: ${WORKER_BASE_URL}
   count: ${WORKERS_COUNT}
   timeout: ${TIMEOUT}
+
+spring:
+  rabbitmq:
+    host: rabbitmq
+    port: 5672
+    username: notification
+    password: notification
+    virtual-host: notification

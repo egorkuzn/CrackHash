@@ -4,44 +4,31 @@ services:
   crackhash-manager:
     env_file:
       - .env
-    image: 1c3bb3a3421d67ad018c15bb4ed1a9c2b4edd76ae081883dfb6a69b13163ace3
+    image: fa251e9d106f0d5a9710eb9a3e0f65f1081086560667ef349e17eb96a2cd4332
     networks:
       - crackhash
     ports:
-      - "10010:80"
+      - '10010:80'
     restart: on-failure
+
   crackhash-worker-1:
     env_file:
       - .env
-    build: ./worker/
-    networks:
-      - crackhash
-    #    deploy:
-    #      mode: replicated
-    #      replicas: 4
-    #      endpoint_mode: dnsrr
-    restart: on-failure
-  crackhash-worker-2:
-    env_file:
-      - .env
-    build: ./worker/
+    image: 6697501d8eeac1c34353af4eac36385465eb7fc964929bbcaa84199a7c4a7b44
     networks:
       - crackhash
     restart: on-failure
-  crackhash-worker-3:
-    env_file:
-      - .env
-    build: ./worker/
+
+  rabbitmq:
+    image: 'rabbitmq:3.13.0-management-alpine'
+    environment:
+      RABBITMQ_DEFAULT_USER: notification
+      RABBITMQ_DEFAULT_PASS: notification
     networks:
       - crackhash
-    restart: on-failure
-  crackhash-worker-4:
-    env_file:
-      - .env
-    build: ./worker/
-    networks:
-      - crackhash
-    restart: on-failure
+    ports:
+      - '5672:5672'
+      - '15672:15672'
 
 networks:
   crackhash:
