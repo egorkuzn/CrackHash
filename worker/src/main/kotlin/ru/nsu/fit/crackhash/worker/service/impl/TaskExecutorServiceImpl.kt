@@ -1,10 +1,7 @@
 package ru.nsu.fit.crackhash.worker.service.impl
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
+import kotlinx.coroutines.*
 import kotlinx.coroutines.future.asCompletableFuture
-import kotlinx.coroutines.launch
 import org.paukov.combinatorics3.Generator
 import org.slf4j.Logger
 import org.springframework.beans.factory.annotation.Value
@@ -28,8 +25,9 @@ class TaskExecutorServiceImpl(
     override fun takeNewTask(workerTask: WorkerTask) {
         taskExecutorScope.launch {
             val loggerBase = workerTask.run { "Task [$partNumber|$partCount]#$requestId" }
-
-            val res = async { executeTask(workerTask, loggerBase) }.asCompletableFuture()
+// либо семафор, либо атомик, средство синхронизации, peek
+            val job = async { executeTask(workerTask, loggerBase) { ensureActive() } }
+            val res = job.asCompletableFuture()
                 .completeOnTimeout(null, timeoutMinutes, TimeUnit.MINUTES)
                 .get()
 
@@ -41,17 +39,17 @@ class TaskExecutorServiceImpl(
                 )
             )
 
+            job.cancelAndJoin()
             val crackResultStatus = if (res != null) "successfully" else "with timeout"
-
             logger.info("$loggerBase finished $crackResultStatus")
         }
     }
 
-    private fun executeTask(workerTask: WorkerTask, loggerBase: String): List<String> {
+    private fun executeTask(workerTask: WorkerTask, loggerBase: String, cancellationDispatch: () -> Unit): List<String> {
         workerTask.apply { logger.info("$loggerBase started") }
         return (1..workerTask.maxLength).flatMap {
             workerTask.apply { logger.info("$loggerBase running $it/${workerTask.maxLength} symbols") }
-            crackForFixedLength(it, workerTask, loggerBase)
+            crackForFixedLength(it, workerTask, loggerBase, cancellationDispatch)
         }
     }
 
@@ -59,6 +57,7 @@ class TaskExecutorServiceImpl(
         length: Int,
         workerTask: WorkerTask,
         loggerBase: String,
+        cancellationDispatch: () -> Unit,
     ): List<String> {
         var counter = -1
 
@@ -66,9 +65,13 @@ class TaskExecutorServiceImpl(
             ('0'..'9') + ('a'..'z')
         ).withRepetitions(length)
             .stream()
+            .peek { cancellationDispatch() }
             .skip(workerTask.partNumber.toLong())
+            .peek { cancellationDispatch() }
             .filter { (++counter) % workerTask.partCount == 0 }
+            .peek { cancellationDispatch() }
             .filter { hash(String(it.toCharArray())) == workerTask.hash }
+            .peek { cancellationDispatch() }
             .map { String(it.toCharArray()) }
             .peek { workerTask.apply { logger.info("$loggerBase found '$it'") } }
             .distinct()
