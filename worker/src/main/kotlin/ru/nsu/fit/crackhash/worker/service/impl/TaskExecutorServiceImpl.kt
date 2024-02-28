@@ -4,7 +4,9 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.future.asCompletableFuture
 import org.paukov.combinatorics3.Generator
 import org.slf4j.Logger
+import org.springframework.amqp.core.DirectExchange
 import org.springframework.amqp.rabbit.core.RabbitTemplate
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.util.DigestUtils
@@ -18,7 +20,8 @@ class TaskExecutorServiceImpl(
     @Value("\${manager.timeout}")
     private val timeoutMinutes: Long,
     private val logger: Logger,
-    private val manager: RabbitTemplate
+    private val manager: RabbitTemplate,
+    @Qualifier("w2m-direct") private val exchange: DirectExchange,
 ) : TaskExecutorService {
     val taskExecutorScope = CoroutineScope(Dispatchers.Default)
 
@@ -31,6 +34,7 @@ class TaskExecutorServiceImpl(
                 .get()
 
             manager.convertAndSend(
+                exchange.name,
                 "worker-to-manager",
                 WorkerResponseDto(
                     workerTask.partNumber,
@@ -45,7 +49,11 @@ class TaskExecutorServiceImpl(
         }
     }
 
-    private fun executeTask(workerTask: WorkerTask, loggerBase: String, cancellationDispatch: () -> Unit): List<String> {
+    private fun executeTask(
+        workerTask: WorkerTask,
+        loggerBase: String,
+        cancellationDispatch: () -> Unit,
+    ): List<String> {
         workerTask.apply { logger.info("$loggerBase started") }
         return (1..workerTask.maxLength).flatMap {
             workerTask.apply { logger.info("$loggerBase running $it/${workerTask.maxLength} symbols") }
