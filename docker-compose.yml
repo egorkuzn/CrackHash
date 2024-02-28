@@ -4,7 +4,7 @@ services:
   crackhash-manager:
     env_file:
       - .env
-    image: fa251e9d106f0d5a9710eb9a3e0f65f1081086560667ef349e17eb96a2cd4332
+    build: ./manager/
     networks:
       - crackhash
     ports:
@@ -14,7 +14,7 @@ services:
   crackhash-worker-1:
     env_file:
       - .env
-    image: 6697501d8eeac1c34353af4eac36385465eb7fc964929bbcaa84199a7c4a7b44
+    build: ./worker/
     networks:
       - crackhash
     restart: on-failure
@@ -22,10 +22,12 @@ services:
   rabbitmq:
     image: 'rabbitmq:3.13.0-management-alpine'
     environment:
-      RABBITMQ_DEFAULT_USER: notification
-      RABBITMQ_DEFAULT_PASS: notification
+      RABBITMQ_DEFAULT_USER: ${RABBIT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBIT_PASS}
+      RABBITMQ_DEFAULT_VHOST: ${RABBIT_VHOST}
     networks:
       - crackhash
+    restart: on-failure
     ports:
       - '5672:5672'
       - '15672:15672'

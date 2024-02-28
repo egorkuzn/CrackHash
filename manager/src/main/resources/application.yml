@@ -7,6 +7,6 @@ spring:
   rabbitmq:
     host: rabbitmq
     port: 5672
-    username: notification
-    password: notification
-    virtual-host: notification
+    username: ${RABBIT_USER}
+    password: ${RABBIT_PASS}
+    virtual-host: ${RABBIT_VHOST}
