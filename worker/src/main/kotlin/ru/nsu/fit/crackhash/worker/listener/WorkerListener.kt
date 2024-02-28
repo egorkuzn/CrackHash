@@ -1,14 +1,12 @@
 package ru.nsu.fit.crackhash.worker.listener
 
-import org.slf4j.Logger
 import org.springframework.amqp.rabbit.annotation.RabbitListener
 import org.springframework.stereotype.Component
 import ru.nsu.fit.crackhash.worker.model.dto.WorkerTaskDto
+import ru.nsu.fit.crackhash.worker.service.WorkerService
 
 @Component
-class TestListener(private val logger: Logger) {
+class WorkerListener(private val workerService: WorkerService) {
     @RabbitListener(queues = ["test-queue"])
-    fun testListener(dto: WorkerTaskDto) {
-        logger.info(dto.requestId)
-    }
+    fun taskListener(crackRequest: WorkerTaskDto) = workerService.takeTask(crackRequest)
 }

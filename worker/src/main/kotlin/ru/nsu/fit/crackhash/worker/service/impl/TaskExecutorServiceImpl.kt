@@ -4,10 +4,10 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.future.asCompletableFuture
 import org.paukov.combinatorics3.Generator
 import org.slf4j.Logger
+import org.springframework.amqp.rabbit.core.RabbitTemplate
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.util.DigestUtils
-import ru.nsu.fit.crackhash.worker.manager.ManagerApi
 import ru.nsu.fit.crackhash.worker.model.dto.WorkerResponseDto
 import ru.nsu.fit.crackhash.worker.model.enity.WorkerTask
 import ru.nsu.fit.crackhash.worker.service.TaskExecutorService
@@ -18,20 +18,20 @@ class TaskExecutorServiceImpl(
     @Value("\${manager.timeout}")
     private val timeoutMinutes: Long,
     private val logger: Logger,
-    private val manager: ManagerApi,
+    private val manager: RabbitTemplate
 ) : TaskExecutorService {
     val taskExecutorScope = CoroutineScope(Dispatchers.Default)
 
     override fun takeNewTask(workerTask: WorkerTask) {
         taskExecutorScope.launch {
             val loggerBase = workerTask.run { "Task [$partNumber|$partCount]#$requestId" }
-// либо семафор, либо атомик, средство синхронизации, peek
             val job = async { executeTask(workerTask, loggerBase) { ensureActive() } }
             val res = job.asCompletableFuture()
                 .completeOnTimeout(null, timeoutMinutes, TimeUnit.MINUTES)
                 .get()
 
-            manager.sendTaskResult(
+            manager.convertAndSend(
+                "worker-to-manager",
                 WorkerResponseDto(
                     workerTask.partNumber,
                     workerTask.requestId,
