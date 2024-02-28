@@ -7,6 +7,6 @@ import ru.nsu.fit.crackhash.worker.service.WorkerService
 
 @Component
 class WorkerListener(private val workerService: WorkerService) {
-    @RabbitListener(queues = ["test-queue"])
+    @RabbitListener(queues = ["manager-to-worker"])
     fun taskListener(crackRequest: WorkerTaskDto) = workerService.takeTask(crackRequest)
 }
