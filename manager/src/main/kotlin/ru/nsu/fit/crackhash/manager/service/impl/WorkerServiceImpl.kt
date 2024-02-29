@@ -1,7 +1,6 @@
 package ru.nsu.fit.crackhash.manager.service.impl
 
 import org.springframework.amqp.core.DirectExchange
-import org.springframework.amqp.core.Queue
 import org.springframework.amqp.rabbit.core.RabbitTemplate
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value

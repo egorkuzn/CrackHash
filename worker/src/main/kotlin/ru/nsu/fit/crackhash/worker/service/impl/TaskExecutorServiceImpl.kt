@@ -21,7 +21,7 @@ class TaskExecutorServiceImpl(
     private val timeoutMinutes: Long,
     private val logger: Logger,
     private val manager: RabbitTemplate,
-    @Qualifier("w2m-direct") private val exchange: DirectExchange,
+    @Qualifier("directExchangeWorkerToManager") private val exchange: DirectExchange,
 ) : TaskExecutorService {
     val taskExecutorScope = CoroutineScope(Dispatchers.Default)
 

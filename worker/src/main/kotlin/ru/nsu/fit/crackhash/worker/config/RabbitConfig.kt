@@ -16,22 +16,22 @@ import org.springframework.context.annotation.Import
 @Import(RabbitConfiguration::class)
 @EnableRabbit
 class RabbitConfig(@Value("\${worker.number}") private val workerNumber: String) {
-    @Bean("m2w-queue")
+    @Bean
     fun queueManagerToWorker() = Queue("manager-to-worker", true)
 
-    @Bean("w2m-queue")
+    @Bean
     fun queueWorkerToManager() = Queue("worker-to-manager", true)
 
-    @Bean("m2w-direct")
+    @Bean
     fun directExchangeManagerToWorker() = DirectExchange("manager-to-worker")
 
-    @Bean("w2m-direct")
+    @Bean
     fun directExchangeWorkerToManager() = DirectExchange("worker-to-manager")
 
     @Bean
     fun workerBinding(
-        @Qualifier("m2w-queue") queue: Queue,
-        @Qualifier("m2w-direct") direct: DirectExchange,
+        @Qualifier("queueManagerToWorker") queue: Queue,
+        @Qualifier("directExchangeManagerToWorker") direct: DirectExchange,
     ) = BindingBuilder.bind(queue)
         .to(direct)
         .with(workerNumber)
