@@ -28,47 +28,27 @@ import ru.nsu.fit.crackhash.manager.worker.WorkerApi
 @Configuration
 @Import(RabbitConfiguration::class)
 @EnableRabbit
-class RabbitConfig(@Value("\${workers.count}") private val workersCount: Int) {
-    @Bean("m2w-queue")
+class RabbitConfig {
+    @Bean
     fun queueManagerToWorker() = Queue("manager-to-worker", true)
 
-    @Bean("w2m-queue")
+    @Bean
     fun queueWorkerToManager() = Queue("worker-to-manager", true)
 
-    @Bean("m2w-direct")
+    @Bean
     fun directExchangeManagerToWorker() = DirectExchange("manager-to-worker")
 
-    @Bean("w2m-direct")
-    fun directExchangeWorkerToManager() = DirectExchange("manager-to-worker")
+    @Bean
+    fun directExchangeWorkerToManager() = DirectExchange("worker-to-manager")
 
     @Bean
     fun workerBinding(
-        @Qualifier("w2m-queue") queue: Queue,
-        @Qualifier("w2m-direct") direct: DirectExchange,
+        @Qualifier("queueWorkerToManager") queue: Queue,
+        @Qualifier("directExchangeWorkerToManager") direct: DirectExchange,
     ) = BindingBuilder.bind(queue)
         .to(direct)
         .with("manager")
 
     @Bean
     fun messageConverter() = Jackson2JsonMessageConverter()
-
-    @Bean
-    fun workers(
-        @Qualifier("m2w-queue") queue: Queue,
-        @Qualifier("m2w-direct") exchange: DirectExchange,
-        template: RabbitTemplate,
-    ) = (1..workersCount).map {
-        WorkerEntity(
-            object: WorkerApi {
-                override fun takeTask(task: WorkerTaskDto) {
-                    template.convertAndSend(
-                        exchange.name,
-                        it.toString(),
-                        task
-                    )
-                }
-            },
-            it
-        )
-    }
 }

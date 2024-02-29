@@ -12,6 +12,18 @@ services:
     restart: on-failure
 
   crackhash-worker-1:
+    environment:
+      WORKER_NUMBER: 1
+    env_file:
+      - .env
+    build: ./worker/
+    networks:
+      - crackhash
+    restart: on-failure
+
+  crackhash-worker-2:
+    environment:
+      WORKER_NUMBER: 2
     env_file:
       - .env
     build: ./worker/

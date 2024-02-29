@@ -35,7 +35,7 @@ class TaskExecutorServiceImpl(
 
             manager.convertAndSend(
                 exchange.name,
-                "worker-to-manager",
+                "manager",
                 WorkerResponseDto(
                     workerTask.partNumber,
                     workerTask.requestId,
