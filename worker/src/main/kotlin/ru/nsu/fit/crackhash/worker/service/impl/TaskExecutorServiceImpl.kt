@@ -1,19 +1,17 @@
 package ru.nsu.fit.crackhash.worker.service.impl
 
 import kotlinx.coroutines.*
-import kotlinx.coroutines.future.asCompletableFuture
 import org.paukov.combinatorics3.Generator
 import org.slf4j.Logger
-import org.springframework.amqp.core.DirectExchange
 import org.springframework.amqp.rabbit.core.RabbitTemplate
-import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.util.DigestUtils
 import ru.nsu.fit.crackhash.worker.model.dto.WorkerResponseDto
 import ru.nsu.fit.crackhash.worker.model.enity.WorkerTask
 import ru.nsu.fit.crackhash.worker.service.TaskExecutorService
-import java.util.concurrent.TimeUnit
+import kotlin.time.DurationUnit
+import kotlin.time.toDuration
 
 @Service
 class TaskExecutorServiceImpl(
@@ -21,31 +19,29 @@ class TaskExecutorServiceImpl(
     private val timeoutMinutes: Long,
     private val logger: Logger,
     private val manager: RabbitTemplate,
-    @Qualifier("directExchangeWorkerToManager") private val exchange: DirectExchange,
+    @Value("\${worker.number}")
+    private val workerNumber: Int,
 ) : TaskExecutorService {
-    val taskExecutorScope = CoroutineScope(Dispatchers.Default)
+    override fun takeNewTask(workerTask: WorkerTask): Unit = runBlocking {
+        val loggerBase = workerTask.run { "Task [$partNumber|$partCount]#$requestId" }
 
-    override fun takeNewTask(workerTask: WorkerTask) {
-        taskExecutorScope.launch {
-            val loggerBase = workerTask.run { "Task [$partNumber|$partCount]#$requestId" }
-            val job = async { executeTask(workerTask, loggerBase) { ensureActive() } }
-            val res = job.asCompletableFuture()
-                .completeOnTimeout(null, timeoutMinutes, TimeUnit.MINUTES)
-                .get()
+        logger.info("$loggerBase: Started")
 
+        withTimeoutOrNull(timeoutMinutes.toDuration(DurationUnit.MINUTES)) {
+            executeTask(workerTask, loggerBase) { ensureActive() }
+        }.let { result ->
             manager.convertAndSend(
-                exchange.name,
+                "worker-to-manager",
                 "manager",
                 WorkerResponseDto(
                     workerTask.partNumber,
                     workerTask.requestId,
-                    res
+                    result
                 )
             )
 
-            job.cancelAndJoin()
-            val crackResultStatus = if (res != null) "successfully" else "with timeout"
-            logger.info("$loggerBase finished $crackResultStatus")
+            val nullState = if (result == null) "TIMEOUT" else "SUCCESS"
+            logger.info("$loggerBase finished $nullState.")
         }
     }
 
