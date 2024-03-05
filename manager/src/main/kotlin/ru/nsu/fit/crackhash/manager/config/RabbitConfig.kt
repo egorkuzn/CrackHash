@@ -1,5 +1,7 @@
 package ru.nsu.fit.crackhash.manager.config
 
+import com.rabbitmq.client.ShutdownSignalException
+import org.slf4j.Logger
 import org.springframework.amqp.core.BindingBuilder
 import org.springframework.amqp.core.DirectExchange
 import org.springframework.amqp.core.Queue
@@ -33,7 +35,10 @@ import java.lang.Exception
 @Configuration
 @Import(RabbitConfiguration::class)
 @EnableRabbit
-class RabbitConfig(@Value("\${workers.count}") private val workersCount: Int) {
+class RabbitConfig(
+    @Value("\${workers.count}") private val workersCount: Int,
+    private val logger: Logger
+) {
     @Bean
     fun queueWorkerToManager() = Queue("worker-to-manager", true)
 
@@ -52,7 +57,19 @@ class RabbitConfig(@Value("\${workers.count}") private val workersCount: Int) {
     fun workers(template: RabbitTemplate): List<WorkerEntity> {
         template.connectionFactory.addConnectionListener(object: ConnectionListener{
             override fun onCreate(connection: Connection) {
-             // TODO: добавить монго
+                logger.info("On create manager log")
+            }
+
+            override fun onClose(connection: Connection) {
+                logger.info("On close manager log")
+            }
+
+            override fun onFailed(exception: Exception) {
+                logger.info("On failed manager log")
+            }
+
+            override fun onShutDown(signal: ShutdownSignalException) {
+                logger.info("On shutdown manager log")
             }
         })
 
