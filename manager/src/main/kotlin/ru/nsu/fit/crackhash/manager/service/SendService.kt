@@ -1,6 +1,6 @@
 package ru.nsu.fit.crackhash.manager.service
 
 interface SendService {
-    fun execute()
+    fun execute(id: String)
     fun sendAfterRabbitReconnect()
 }

@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import ru.nsu.fit.crackhash.manager.model.dto.WorkerTaskDto
 import ru.nsu.fit.crackhash.manager.model.entity.WorkerEntity
-import ru.nsu.fit.crackhash.manager.repo.TaskRepo
+import ru.nsu.fit.crackhash.manager.repo.MongoTaskRepo
 import ru.nsu.fit.crackhash.manager.service.SendService
 
 @Service
@@ -16,14 +16,14 @@ class SendServiceImpl(
     @Value("\${workers.count}")
     private val partCount: Int,
     private val workers: List<WorkerEntity>,
-    private val taskRepo: TaskRepo,
+    private val taskRepo: MongoTaskRepo,
     private val logger: Logger,
 ) : SendService {
     var sendServiceCoroutineScope = CoroutineScope(Dispatchers.Default)
 
-    override fun execute() {
+    override fun execute(id: String) {
         sendServiceCoroutineScope.launch {
-            val task = taskRepo.takeTask()
+            val task = taskRepo.findById(id).get()
 
             workers.forEach { worker ->
                 worker.run {

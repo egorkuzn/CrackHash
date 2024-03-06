@@ -9,13 +9,13 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import ru.nsu.fit.crackhash.manager.model.dto.WorkerTaskDto
 import ru.nsu.fit.crackhash.manager.model.entity.WorkerEntity
-import ru.nsu.fit.crackhash.manager.repo.MongoRepo
+import ru.nsu.fit.crackhash.manager.repo.MongoTaskRepo
 import ru.nsu.fit.crackhash.manager.worker.WorkerApi
 
 @Configuration
 class WorkersConfig(
     private val logger: Logger,
-    private val mongoRepo: MongoRepo,
+    private val mongoRepo: MongoTaskRepo,
     @Value("\${workers.count}") private val workersCount: Int
 ) {
     @Bean

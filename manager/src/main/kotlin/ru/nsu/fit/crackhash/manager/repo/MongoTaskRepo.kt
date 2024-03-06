@@ -5,4 +5,4 @@ import org.springframework.stereotype.Repository
 import ru.nsu.fit.crackhash.manager.model.entity.TaskMongoEntity
 
 @Repository
-interface MongoRepo: MongoRepository<TaskMongoEntity, String>
+interface MongoTaskRepo: MongoRepository<TaskMongoEntity, String>

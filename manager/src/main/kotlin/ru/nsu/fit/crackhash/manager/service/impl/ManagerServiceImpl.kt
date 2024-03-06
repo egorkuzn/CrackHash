@@ -9,8 +9,8 @@ import ru.nsu.fit.crackhash.manager.model.dto.CrackRequestDto
 import ru.nsu.fit.crackhash.manager.model.dto.CrackResponseDto
 import ru.nsu.fit.crackhash.manager.model.dto.Status
 import ru.nsu.fit.crackhash.manager.model.dto.StatusResposeDto
-import ru.nsu.fit.crackhash.manager.model.entity.CrackParam
-import ru.nsu.fit.crackhash.manager.repo.TaskRepo
+import ru.nsu.fit.crackhash.manager.model.entity.TaskMongoEntity
+import ru.nsu.fit.crackhash.manager.repo.MongoTaskRepo
 import ru.nsu.fit.crackhash.manager.service.ManagerService
 import ru.nsu.fit.crackhash.manager.service.SendService
 import java.util.*
@@ -19,7 +19,7 @@ import java.util.*
 class ManagerServiceImpl(
     @Value("\${workers.count}")
     private val partCount: Int,
-    private val taskRepo: TaskRepo,
+    private val taskRepo: MongoTaskRepo,
     private val sendService: SendService,
     private val responseService: ResponseService,
 ) : ManagerService {
@@ -36,9 +36,30 @@ class ManagerServiceImpl(
         crackRequest: CrackRequestDto,
         partCount: Int,
     ) {
-        taskRepo[requestId] = CrackParam(crackRequest)
-        responseService.prepareForResponse(requestId, partCount)
-        sendService.execute()
+        prepareTasks(
+            requestId,
+            crackRequest,
+            partCount
+        )
+        sendService.execute(requestId)
+    }
+
+    private fun prepareTasks(
+        requestId: String,
+        crackRequest: CrackRequestDto,
+        partCount: Int
+    ) {
+        (1..partCount).forEach {
+            taskRepo.save(
+                TaskMongoEntity(
+                    requestId,
+                    crackRequest.hash,
+                    crackRequest.maxLength,
+                    partCount,
+                    partNumber
+                )
+            )
+        }
     }
 
     private fun newRequestId() = UUID.randomUUID().toString()
