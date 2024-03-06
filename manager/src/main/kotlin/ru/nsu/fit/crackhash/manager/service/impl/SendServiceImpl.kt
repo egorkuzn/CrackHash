@@ -46,4 +46,8 @@ class SendServiceImpl(
             }
         }
     }
+
+    override fun sendAfterRabbitReconnect() {
+
+    }
 }

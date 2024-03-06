@@ -1,25 +1,15 @@
 package ru.nsu.fit.crackhash.manager.config
 
-import com.rabbitmq.client.ShutdownSignalException
-import org.slf4j.Logger
 import org.springframework.amqp.core.BindingBuilder
 import org.springframework.amqp.core.DirectExchange
 import org.springframework.amqp.core.Queue
 import org.springframework.amqp.rabbit.annotation.EnableRabbit
-import org.springframework.amqp.rabbit.connection.Connection
-import org.springframework.amqp.rabbit.connection.ConnectionListener
-import org.springframework.amqp.rabbit.core.RabbitTemplate
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter
 import org.springframework.beans.factory.annotation.Qualifier
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.cloud.stream.binder.rabbit.config.RabbitConfiguration
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Import
-import ru.nsu.fit.crackhash.manager.model.dto.WorkerTaskDto
-import ru.nsu.fit.crackhash.manager.model.entity.WorkerEntity
-import ru.nsu.fit.crackhash.manager.worker.WorkerApi
-import java.lang.Exception
 
 // https://habr.com/ru/articles/703352/
 
@@ -35,10 +25,7 @@ import java.lang.Exception
 @Configuration
 @Import(RabbitConfiguration::class)
 @EnableRabbit
-class RabbitConfig(
-    @Value("\${workers.count}") private val workersCount: Int,
-    private val logger: Logger
-) {
+class RabbitConfig {
     @Bean
     fun queueWorkerToManager() = Queue("worker-to-manager", true)
 
@@ -49,45 +36,7 @@ class RabbitConfig(
     fun workerBinding(
         @Qualifier("queueWorkerToManager") queue: Queue,
         @Qualifier("directExchangeWorkerToManager") direct: DirectExchange,
-    ) = BindingBuilder.bind(queue)
-        .to(direct)
-        .with("manager")
-
-    @Bean
-    fun workers(template: RabbitTemplate): List<WorkerEntity> {
-        template.connectionFactory.addConnectionListener(object: ConnectionListener{
-            override fun onCreate(connection: Connection) {
-                logger.info("On create manager log")
-            }
-
-            override fun onClose(connection: Connection) {
-                logger.info("On close manager log")
-            }
-
-            override fun onFailed(exception: Exception) {
-                logger.info("On failed manager log")
-            }
-
-            override fun onShutDown(signal: ShutdownSignalException) {
-                logger.info("On shutdown manager log")
-            }
-        })
-
-        return (1..workersCount).map {
-            WorkerEntity(
-                object : WorkerApi {
-                    override fun takeTask(task: WorkerTaskDto) {
-                        template.convertAndSend(
-                            "manager-to-worker",
-                            "worker",
-                            task
-                        )
-                    }
-                },
-                it
-            )
-        }
-    }
+    ) = BindingBuilder.bind(queue).to(direct).with("manager")
 
     @Bean
     fun messageConverter() = Jackson2JsonMessageConverter()

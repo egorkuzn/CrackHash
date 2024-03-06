@@ -1,6 +1,8 @@
 package ru.nsu.fit.crackhash.manager.service.impl
 
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import ru.nsu.fit.crackhash.manager.model.dto.CrackRequestDto
@@ -41,11 +43,10 @@ class ManagerServiceImpl(
 
     private fun newRequestId() = UUID.randomUUID().toString()
 
-    override fun status(requestId: String) =
-        responseService.responseStatus(requestId).let {
-            StatusResposeDto(
-                it,
-                if (it == Status.READY) responseService[requestId] else null
-            )
-        }
+    override fun status(requestId: String) = responseService.responseStatus(requestId).let {
+        StatusResposeDto(
+            it,
+            if (it == Status.READY) responseService[requestId] else null
+        )
+    }
 }

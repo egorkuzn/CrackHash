@@ -30,6 +30,9 @@ dependencies {
     // rabbit dependencies
     implementation("org.springframework.cloud:spring-cloud-stream")
     implementation("org.springframework.cloud:spring-cloud-starter-stream-rabbit")
+
+    // mongo dependencies
+    implementation("org.springframework.boot:spring-boot-starter-data-mongodb:3.2.3")
 }
 
 dependencyManagement {
