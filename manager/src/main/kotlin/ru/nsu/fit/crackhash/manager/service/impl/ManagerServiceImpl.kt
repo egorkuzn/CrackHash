@@ -13,6 +13,10 @@ import ru.nsu.fit.crackhash.manager.model.entity.TaskMongoEntity
 import ru.nsu.fit.crackhash.manager.repo.MongoTaskRepo
 import ru.nsu.fit.crackhash.manager.service.ManagerService
 import ru.nsu.fit.crackhash.manager.service.SendService
+import java.sql.Time
+import java.sql.Timestamp
+import java.time.LocalDateTime
+import java.time.LocalTime
 import java.util.*
 
 @Service
@@ -27,7 +31,9 @@ class ManagerServiceImpl(
 
     override fun crack(crackRequest: CrackRequestDto) = CrackResponseDto(
         requestId = newRequestId().also {
-            managerCoroutineScope.launch { takeInWork(it, crackRequest, partCount) }
+            managerCoroutineScope.launch {
+                takeInWork(it, crackRequest, partCount)
+            }
         }
     )
 
@@ -49,7 +55,7 @@ class ManagerServiceImpl(
         crackRequest: CrackRequestDto,
         partCount: Int
     ) {
-        (1..partCount).forEach {
+        (1..partCount).forEach { partNumber ->
             taskRepo.save(
                 TaskMongoEntity(
                     requestId,

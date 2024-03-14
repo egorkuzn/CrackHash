@@ -1,16 +1,16 @@
 package ru.nsu.fit.crackhash.manager.model.entity
 
-import jakarta.validation.Constraint
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
+import java.time.LocalDateTime
 
 @Document("worker_task")
-data class TaskMongoEntity (
+data class TaskMongoEntity(
     @Id
     val requestId: String,
     val hash: String,
     val maxLength: Int,
     val partCount: Int,
-    @Constraint(validatedBy = { partNumber < partCount })
-    val partNumber: Int
+    val partNumber: Int,
+    val time: LocalDateTime = LocalDateTime.now()
 )

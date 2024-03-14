@@ -1,4 +1,4 @@
-version: '3.3'
+version: '3.9'
 
 services:
   crackhash-manager:
@@ -7,6 +7,8 @@ services:
     build: ./manager/
     depends_on:
       rabbitmq:
+        condition: service_healthy
+      mongodb:
         condition: service_healthy
     networks:
       - crackhash
@@ -57,6 +59,46 @@ services:
     ports:
       - '5672:5672'
       - '15672:15672'
+
+  mongo1:
+    container_name: mongo1
+    image: mongo:7.0.7-rc2
+    volumes:
+      - ~/mongors/data1:/data/db
+      - ./rs-init.sh:/scripts/rs-init.sh
+    networks:
+      - crackhash
+    links:
+      - mongo2
+      - mongo3
+    restart: always
+    command: [ "mongod", "--bind_ip_all", "--replSet", "dbrs"]
+    healthcheck:
+      test: "./scripts/rs-init.sh"
+      interval: 5s
+      timeout: 20s
+      retries: 20
+
+  mongo2:
+    container_name: mongo2
+    image: mongo:7.0.7-rc2
+    volumes:
+      - ~/mongors/data2:/data/db
+    networks:
+      - crackhash
+    restart: always
+    command: [ "mongod", "--bind_ip_all", "--replSet", "dbrs" ]
+
+  mongo3:
+    container_name: mongo3
+    image: mongo:7.0.7-rc2
+    volumes:
+      - ~/mongors/data3:/data/db
+    networks:
+      - crackhash
+    restart: always
+    command: [ "mongod", "--bind_ip_all", "--replSet", "dbrs" ]
+
 networks:
   crackhash:
     driver: bridge
