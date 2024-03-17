@@ -10,6 +10,7 @@ import ru.nsu.fit.crackhash.manager.model.dto.CrackResponseDto
 import ru.nsu.fit.crackhash.manager.model.dto.Status
 import ru.nsu.fit.crackhash.manager.model.dto.StatusResposeDto
 import ru.nsu.fit.crackhash.manager.model.entity.TaskMongoEntity
+import ru.nsu.fit.crackhash.manager.model.entity.TaskStatus
 import ru.nsu.fit.crackhash.manager.repo.MongoTaskRepo
 import ru.nsu.fit.crackhash.manager.service.ManagerService
 import ru.nsu.fit.crackhash.manager.service.SendService
@@ -20,8 +21,7 @@ class ManagerServiceImpl(
     @Value("\${workers.count}")
     private val partCount: Int,
     private val taskRepo: MongoTaskRepo,
-    private val sendService: SendService,
-    private val responseService: ResponseService,
+    private val sendService: SendService
 ) : ManagerService {
     val managerCoroutineScope = CoroutineScope(Dispatchers.Default)
 
@@ -51,25 +51,25 @@ class ManagerServiceImpl(
         crackRequest: CrackRequestDto,
         partCount: Int
     ) {
-        (1..partCount).forEach { partNumber ->
-            taskRepo.save(
-                TaskMongoEntity(
-                    requestId,
-                    crackRequest.hash,
-                    crackRequest.maxLength,
-                    partCount,
-                    partNumber
-                )
+        taskRepo.save(
+            TaskMongoEntity(
+                requestId,
+                crackRequest.hash,
+                crackRequest.maxLength,
+                partCount
             )
-        }
+        )
     }
 
     private fun newRequestId() = UUID.randomUUID().toString()
 
-    override fun status(requestId: String) = responseService.responseStatus(requestId).let {
+    override fun status(requestId: String) = taskRepo.findFirstByRequestId(requestId).let {
         StatusResposeDto(
-            it,
-            if (it == Status.READY) responseService[requestId] else null
+            it.taskStatus,
+            if (it.taskStatus == TaskStatus.FINISHED)
+                it.resultSet.toTypedArray()
+            else
+                null
         )
     }
 }

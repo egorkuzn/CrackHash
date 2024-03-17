@@ -12,10 +12,11 @@ data class TaskMongoEntity(
     val hash: String,
     val maxLength: Int,
     val partCount: Int,
-    var sendSet: Set<Int>,
-    var resultSet: Set<String>,
+    var sendSet: Set<Int> = (1 .. partCount).toSet(),
+    var resultSet: Set<String> = mutableSetOf(),
     var taskStatus: TaskStatus = TaskStatus.WAIT,
-    val time: LocalDateTime = LocalDateTime.now()
+    val time: LocalDateTime = LocalDateTime.now(),
+    var receivedTaskCounter: Int = 0
 ) {
     fun isTimeout(timeout: Int) = Duration.between(
         LocalDateTime.now(),

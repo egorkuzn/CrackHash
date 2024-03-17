@@ -7,6 +7,7 @@ import org.slf4j.Logger
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import ru.nsu.fit.crackhash.manager.model.dto.WorkerResponseDto
+import ru.nsu.fit.crackhash.manager.model.entity.TaskMongoEntity
 import ru.nsu.fit.crackhash.manager.model.entity.TaskStatus
 import ru.nsu.fit.crackhash.manager.repo.MongoTaskRepo
 import ru.nsu.fit.crackhash.manager.service.ManagerInternalService
@@ -22,24 +23,29 @@ class ManagerInternalServiceImpl(
 
     override fun crackRequest(response: WorkerResponseDto) {
         managerInternalCoroutineScope.launch {
-            when {
-                response.value == null -> onTimeout(response)
-                response.value.isNotEmpty() -> onNewValueResult(response)
+            taskUpdater(response) {
+                when {
+                    response.value == null -> taskStatus = TaskStatus.TIMEOUT
+                    response.value.isNotEmpty() -> {
+                        if (isTimeout(timeout)) {
+                            taskStatus = TaskStatus.TIMEOUT
+                        } else {
+                            resultSet = resultSet + response.value
+                            if (receivedTaskCounter == partCount) taskStatus = TaskStatus.FINISHED
+                        }
+                    }
+                    else -> {}
+                }
             }
         }
     }
 
-    private fun onTimeout(response: WorkerResponseDto) {
-        val task = taskRepo.findFirstByRequestId(response.requestId)
-        taskRepo.save(task.apply { taskStatus = TaskStatus.TIMEOUT })
-    }
-
-    private fun onNewValueResult(response: WorkerResponseDto) {
-        val task = taskRepo.findFirstByRequestId(response.requestId)
-
-        taskRepo.save(task.apply {
-            if (task.isTimeout(timeout)) taskStatus = TaskStatus.TIMEOUT
-            resultSet = resultSet + response.value!!
-        })
-    }
+    private fun taskUpdater(
+        response: WorkerResponseDto,
+        block: TaskMongoEntity.() -> Unit
+    ) = taskRepo.save(taskRepo.findFirstByRequestId(response.requestId).apply {
+        receivedTaskCounter++
+        block
+        logger.info("Request $requestId [${response.partNumber}|$partCount] $taskStatus")
+    })
 }
