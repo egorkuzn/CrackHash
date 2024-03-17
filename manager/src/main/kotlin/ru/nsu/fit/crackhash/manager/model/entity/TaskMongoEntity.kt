@@ -14,7 +14,7 @@ data class TaskMongoEntity(
     val partCount: Int,
     var sendSet: Set<Int> = (1 .. partCount).toSet(),
     var resultSet: Set<String> = mutableSetOf(),
-    var taskStatus: TaskStatus = TaskStatus.WAIT,
+    var taskStatus: TaskStatus = TaskStatus.IN_PROGRESS,
     val time: LocalDateTime = LocalDateTime.now(),
     var receivedTaskCounter: Int = 0
 ) {
@@ -23,5 +23,5 @@ data class TaskMongoEntity(
         time
     ).toMinutes() > timeout
 
-    fun isToResend() = taskStatus == TaskStatus.WAIT
+    fun isToResend() = taskStatus == TaskStatus.IN_PROGRESS
 }

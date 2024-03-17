@@ -38,7 +38,7 @@ class SendServiceImpl(
     override fun sendAfterRabbitReconnect(findAllByTaskStatus: List<TaskMongoEntity>) {
         findAllByTaskStatus.forEach { task ->
             when {
-                task.isTimeout(timeout) -> taskRepo.save(task.apply { taskStatus = TaskStatus.TIMEOUT })
+                task.isTimeout(timeout) -> taskRepo.save(task.apply { taskStatus = TaskStatus.ERROR })
                 task.isToResend() -> task.sendSet.forEach { partNumber -> workersPool.takeTask(task, partNumber) }
             }
         }

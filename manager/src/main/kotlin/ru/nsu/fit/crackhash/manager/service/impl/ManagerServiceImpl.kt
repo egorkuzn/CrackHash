@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import ru.nsu.fit.crackhash.manager.model.dto.CrackRequestDto
 import ru.nsu.fit.crackhash.manager.model.dto.CrackResponseDto
-import ru.nsu.fit.crackhash.manager.model.dto.Status
 import ru.nsu.fit.crackhash.manager.model.dto.StatusResposeDto
 import ru.nsu.fit.crackhash.manager.model.entity.TaskMongoEntity
 import ru.nsu.fit.crackhash.manager.model.entity.TaskStatus
@@ -66,7 +65,7 @@ class ManagerServiceImpl(
     override fun status(requestId: String) = taskRepo.findFirstByRequestId(requestId).let {
         StatusResposeDto(
             it.taskStatus,
-            if (it.taskStatus == TaskStatus.FINISHED)
+            if (it.taskStatus == TaskStatus.READY)
                 it.resultSet.toTypedArray()
             else
                 null

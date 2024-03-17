@@ -18,7 +18,7 @@ class WorkersConfig(
     fun connectionListener() = ConnectionListener {
         logger.info("Rabbit reconnect")
         sendService.sendAfterRabbitReconnect(
-            mongoRepo.findAllByTaskStatus(TaskStatus.WAIT)
+            mongoRepo.findAllByTaskStatus(TaskStatus.IN_PROGRESS)
         )
     }
 }

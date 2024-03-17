@@ -25,13 +25,13 @@ class ManagerInternalServiceImpl(
         managerInternalCoroutineScope.launch {
             taskUpdater(response) {
                 when {
-                    response.value == null -> taskStatus = TaskStatus.TIMEOUT
+                    response.value == null -> taskStatus = TaskStatus.ERROR
                     response.value.isNotEmpty() -> {
                         if (isTimeout(timeout)) {
-                            taskStatus = TaskStatus.TIMEOUT
+                            taskStatus = TaskStatus.ERROR
                         } else {
                             resultSet = resultSet + response.value
-                            if (receivedTaskCounter == partCount) taskStatus = TaskStatus.FINISHED
+                            if (receivedTaskCounter == partCount) taskStatus = TaskStatus.READY
                         }
                     }
                     else -> {}
