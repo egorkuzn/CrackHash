@@ -6,9 +6,7 @@ import ru.nsu.fit.crackhash.manager.model.entity.TaskMongoEntity
 import ru.nsu.fit.crackhash.manager.model.entity.TaskStatus
 
 @Repository
-interface MongoTaskRepo: MongoRepository<TaskMongoEntity, String> {
-    /**
-     * Нужен для обновления статуса
-     */
-    fun updateStatus(requestId: String, status: TaskStatus)
+interface MongoTaskRepo : MongoRepository<TaskMongoEntity, String> {
+    fun findFirstByRequestId(requestId: String): TaskMongoEntity
+    fun findAllByTaskStatus(status: TaskStatus): List<TaskMongoEntity>
 }

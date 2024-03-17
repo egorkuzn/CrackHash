@@ -13,10 +13,6 @@ import ru.nsu.fit.crackhash.manager.model.entity.TaskMongoEntity
 import ru.nsu.fit.crackhash.manager.repo.MongoTaskRepo
 import ru.nsu.fit.crackhash.manager.service.ManagerService
 import ru.nsu.fit.crackhash.manager.service.SendService
-import java.sql.Time
-import java.sql.Timestamp
-import java.time.LocalDateTime
-import java.time.LocalTime
 import java.util.*
 
 @Service

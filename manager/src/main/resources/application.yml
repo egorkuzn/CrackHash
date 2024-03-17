@@ -1,7 +1,7 @@
 workers:
   base_url: ${WORKER_BASE_URL}
   count: ${WORKERS_COUNT}
-  timeout: ${TIMEOUT}
+  timeout: ${TIMEOUT} # Time in minutes
 
 spring:
   rabbitmq:
@@ -10,3 +10,6 @@ spring:
     username: ${RABBIT_USER}
     password: ${RABBIT_PASS}
     virtual-host: ${RABBIT_VHOST}
+  data.mongodb:
+    uri: mongodb://${MONGO_USER}:${MONGO_PASS}@mongo1:27017,mongo2:27017,mongo3:27017/${MONGO_DATABASE}
+    replica-set-name: dbrs

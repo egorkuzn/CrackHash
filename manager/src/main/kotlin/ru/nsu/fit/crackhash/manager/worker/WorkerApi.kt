@@ -1,7 +1,8 @@
 package ru.nsu.fit.crackhash.manager.worker
 
-import ru.nsu.fit.crackhash.manager.model.dto.WorkerTaskDto
+import ru.nsu.fit.crackhash.manager.model.entity.TaskMongoEntity
 
 interface WorkerApi {
-    fun takeTask(task: WorkerTaskDto)
+    fun init()
+    fun takeTask(task: TaskMongoEntity, partNumber: Int)
 }
