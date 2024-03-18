@@ -1,8 +1,11 @@
 package ru.nsu.fit.crackhash.worker.service.impl
 
-import kotlinx.coroutines.*
+import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeoutOrNull
 import org.paukov.combinatorics3.Generator
 import org.slf4j.Logger
+import org.springframework.amqp.AmqpException
 import org.springframework.amqp.rabbit.core.RabbitTemplate
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
@@ -18,10 +21,10 @@ class TaskExecutorServiceImpl(
     @Value("\${manager.timeout}")
     private val timeoutMinutes: Long,
     private val logger: Logger,
-    private val manager: RabbitTemplate,
-    @Value("\${worker.number}")
-    private val workerNumber: Int,
+    private val manager: RabbitTemplate
 ) : TaskExecutorService {
+    val undeliveredResponses = mutableListOf<WorkerResponseDto>()
+
     override fun takeNewTask(workerTask: WorkerTask): Unit = runBlocking {
         val loggerBase = workerTask.run { "Task [$partNumber|$partCount]#$requestId" }
 
@@ -30,20 +33,28 @@ class TaskExecutorServiceImpl(
         withTimeoutOrNull(timeoutMinutes.toDuration(DurationUnit.MINUTES)) {
             executeTask(workerTask, loggerBase) { ensureActive() }
         }.let { result ->
-            manager.convertAndSend(
-                "worker-to-manager",
-                "manager",
-                WorkerResponseDto(
-                    workerTask.partNumber,
-                    workerTask.requestId,
-                    result
-                )
+            WorkerResponseDto(
+                workerTask.partNumber,
+                workerTask.requestId,
+                result
             )
+        }.let { workerResponse ->
+            try {
+                manager.convertAndSend(
+                    "worker-to-manager",
+                    "manager",
+                    workerResponse
+                )
 
-            val nullState = if (result == null) "TIMEOUT" else "SUCCESS"
-            logger.info("$loggerBase finished $nullState.")
+                val nullState = if (workerResponse.value == null) "TIMEOUT" else "SUCCESS"
+                logger.info("$loggerBase: Finished $nullState.")
+            } catch (e: AmqpException) {
+                undeliveredResponses.add(workerResponse)
+                logger.error("$loggerBase: Exception ${e.message}")
+            }
         }
     }
+
 
     private fun executeTask(
         workerTask: WorkerTask,
