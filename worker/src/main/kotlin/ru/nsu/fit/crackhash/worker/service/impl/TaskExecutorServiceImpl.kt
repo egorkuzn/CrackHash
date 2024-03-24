@@ -23,8 +23,6 @@ class TaskExecutorServiceImpl(
     private val logger: Logger,
     private val manager: RabbitTemplate
 ) : TaskExecutorService {
-    val undeliveredResponses = mutableListOf<WorkerResponseDto>()
-
     override fun takeNewTask(workerTask: WorkerTask): Unit = runBlocking {
         val loggerBase = workerTask.run { "Task [$partNumber|$partCount]#$requestId" }
 
@@ -46,10 +44,9 @@ class TaskExecutorServiceImpl(
                     workerResponse
                 )
 
-                val nullState = if (workerResponse.value == null) "TIMEOUT" else "SUCCESS"
-                logger.info("$loggerBase: Finished $nullState.")
+                val taskResultState = if (workerResponse.value == null) "TIMEOUT" else "SUCCESS"
+                logger.info("$loggerBase: Finished $taskResultState.")
             } catch (e: AmqpException) {
-                undeliveredResponses.add(workerResponse)
                 logger.error("$loggerBase: Exception ${e.message}")
             }
         }

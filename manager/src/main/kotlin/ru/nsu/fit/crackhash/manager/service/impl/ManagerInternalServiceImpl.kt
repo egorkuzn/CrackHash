@@ -6,6 +6,8 @@ import kotlinx.coroutines.launch
 import org.slf4j.Logger
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Isolation
+import org.springframework.transaction.annotation.Transactional
 import ru.nsu.fit.crackhash.manager.model.dto.WorkerResponseDto
 import ru.nsu.fit.crackhash.manager.model.entity.TaskMongoEntity
 import ru.nsu.fit.crackhash.manager.model.entity.TaskStatus
@@ -21,6 +23,7 @@ class ManagerInternalServiceImpl(
 ) : ManagerInternalService {
     val managerInternalCoroutineScope = CoroutineScope(Dispatchers.Default)
 
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
     override fun crackRequest(response: WorkerResponseDto) {
         managerInternalCoroutineScope.launch {
             taskUpdater(response) {
@@ -39,6 +42,7 @@ class ManagerInternalServiceImpl(
             }
         }
     }
+
 
     private fun taskUpdater(
         response: WorkerResponseDto,

@@ -8,5 +8,6 @@ import ru.nsu.fit.crackhash.manager.model.entity.TaskStatus
 @Repository
 interface MongoTaskRepo : MongoRepository<TaskMongoEntity, String> {
     fun findFirstByRequestId(requestId: String): TaskMongoEntity
+
     fun findAllByTaskStatus(status: TaskStatus): List<TaskMongoEntity>
 }

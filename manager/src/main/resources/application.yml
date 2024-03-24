@@ -11,5 +11,4 @@ spring:
     password: ${RABBIT_PASS}
     virtual-host: ${RABBIT_VHOST}
   data.mongodb:
-    uri: mongodb://${MONGO_USER}:${MONGO_PASS}@mongo1:27017,mongo2:27017,mongo3:27017/${MONGO_DATABASE}
-    replica-set-name: dbrs
+    uri: mongodb://mongo1:27017,mongo2:27017,mongo3:27017/db?replicaSet=dbrs

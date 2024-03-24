@@ -8,7 +8,7 @@ services:
     depends_on:
       rabbitmq:
         condition: service_healthy
-      mongodb:
+      mongo1:
         condition: service_healthy
     networks:
       - crackhash
@@ -63,10 +63,6 @@ services:
   mongo1:
     container_name: mongo1
     image: mongo:7.0.7-rc2
-    environment:
-      - MONGO_INITDB_ROOT_USERNAME=${MONGO_USER}
-      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASS}
-      - MONGO_INITDB_DATABASE=${MONGO_DATABASE}
     volumes:
       - ~/mongors/data1:/data/db
       - ./rs-init.sh:/scripts/rs-init.sh
@@ -86,10 +82,6 @@ services:
   mongo2:
     container_name: mongo2
     image: mongo:7.0.7-rc2
-    environment:
-      - MONGO_INITDB_ROOT_USERNAME=${MONGO_USER}
-      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASS}
-      - MONGO_INITDB_DATABASE=${MONGO_DATABASE}
     volumes:
       - ~/mongors/data2:/data/db
     networks:
@@ -100,10 +92,6 @@ services:
   mongo3:
     container_name: mongo3
     image: mongo:7.0.7-rc2
-    environment:
-      - MONGO_INITDB_ROOT_USERNAME=${MONGO_USER}
-      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASS}
-      - MONGO_INITDB_DATABASE=${MONGO_DATABASE}
     volumes:
       - ~/mongors/data3:/data/db
     networks:
