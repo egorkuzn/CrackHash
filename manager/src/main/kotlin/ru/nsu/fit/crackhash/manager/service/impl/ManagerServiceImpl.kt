@@ -17,6 +17,8 @@ import java.util.*
 
 @Service
 class ManagerServiceImpl(
+    @Value("\${workers.timeout}")
+    private val timeout: Int,
     @Value("\${workers.count}")
     private val partCount: Int,
     private val taskRepo: MongoTaskRepo,
@@ -24,13 +26,10 @@ class ManagerServiceImpl(
 ) : ManagerService {
     val managerCoroutineScope = CoroutineScope(Dispatchers.Default)
 
-    override fun crack(crackRequest: CrackRequestDto) = CrackResponseDto(
-        requestId = newRequestId().also {
-            managerCoroutineScope.launch {
-                takeInWork(it, crackRequest, partCount)
-            }
-        }
-    )
+    override fun crack(crackRequest: CrackRequestDto): CrackResponseDto = newRequestId().let { requestId ->
+        takeInWork(requestId, crackRequest, partCount)
+        CrackResponseDto(requestId)
+    }
 
     private fun takeInWork(
         requestId: String,
@@ -42,7 +41,8 @@ class ManagerServiceImpl(
             crackRequest,
             partCount
         )
-        sendService.execute(requestId)
+
+        managerCoroutineScope.launch { sendService.execute(requestId) }
     }
 
     private fun prepareTasks(
@@ -63,12 +63,12 @@ class ManagerServiceImpl(
     private fun newRequestId() = UUID.randomUUID().toString()
 
     override fun status(requestId: String) = taskRepo.findFirstByRequestId(requestId).let {
-        StatusResponseDto(
-            it.taskStatus,
-            if (it.taskStatus == TaskStatus.READY)
-                it.resultSet.toTypedArray()
-            else
-                null
-        )
+        if (it.taskStatus == TaskStatus.IN_PROGRESS &&  it.isTimeout(timeout)) {
+            taskRepo.save(it.apply { taskStatus = TaskStatus.ERROR })
+            StatusResponseDto(TaskStatus.ERROR, null)
+        } else {
+            val data = if (it.taskStatus == TaskStatus.READY) it.resultSet.toTypedArray() else null
+            StatusResponseDto(it.taskStatus, data)
+        }
     }
 }

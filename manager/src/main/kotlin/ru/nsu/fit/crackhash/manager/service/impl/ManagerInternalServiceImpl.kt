@@ -20,21 +20,45 @@ class ManagerInternalServiceImpl(
 ) : ManagerInternalService {
     val managerInternalCoroutineScope = CoroutineScope(Dispatchers.Default)
 
-    override fun crackRequest(response: WorkerResponseDto) {
-        managerInternalCoroutineScope.launch { taskUpdater(response) }
+    override fun crackRequest(
+        response: WorkerResponseDto,
+        retryCount: Int
+    ) {
+        managerInternalCoroutineScope.launch {
+
+            try {
+                taskUpdater(response)
+            } catch (e: Exception) {
+                if (retryCount > 1) {
+                    logger.info("Request ${response.requestId} [${response.partNumber}|2] try to save $retryCount")
+                    crackRequest(response, retryCount - 1)
+                } else {
+                    logger.info("Request ${response.requestId} [${response.partNumber}|2] failed")
+                    taskRepo.save(
+                        taskRepo.findFirstByRequestId(response.requestId)
+                            .apply {
+                                taskStatus = TaskStatus.ERROR
+                            }
+                    )
+                }
+            }
+        }
     }
 
-    private fun taskUpdater(response: WorkerResponseDto) = taskRepo.save(
-        taskRepo.findFirstByRequestId(response.requestId).apply {
-            receivedTaskCounter++
+    private fun taskUpdater(response: WorkerResponseDto) {
+        val task = taskRepo.findFirstByRequestId(response.requestId)
 
-            taskStatus = if (response.value == null || isTimeout(timeout)) TaskStatus.ERROR
-            else {
-                resultSet = resultSet + response.value
-                if (receivedTaskCounter == partCount) TaskStatus.READY else taskStatus
-            }
+        if (task.taskStatus == TaskStatus.IN_PROGRESS)
+            task.apply {
+                responseList[response.partNumber] = true
 
-            logger.info("Request $requestId [${response.partNumber}|$partCount] $taskStatus")
-        }
-    )
+                taskStatus = if (isTimeout(timeout)) TaskStatus.ERROR
+                else {
+                    if (response.value != null) resultSet = resultSet + response.value
+                    if (responseList.contains(false)) taskStatus else TaskStatus.READY
+                }
+
+                logger.info("Request $requestId [${response.partNumber}|$partCount] $taskStatus")
+            }.let { taskRepo.save(it) }
+    }
 }
