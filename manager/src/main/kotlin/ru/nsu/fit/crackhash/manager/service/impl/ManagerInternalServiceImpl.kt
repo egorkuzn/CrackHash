@@ -2,7 +2,6 @@ package ru.nsu.fit.crackhash.manager.service.impl
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import org.slf4j.Logger
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
@@ -16,33 +15,31 @@ class ManagerInternalServiceImpl(
     @Value("\${workers.timeout}")
     private val timeout: Int,
     private val logger: Logger,
-    private val taskRepo: MongoTaskRepo
+    private val taskRepo: MongoTaskRepo,
 ) : ManagerInternalService {
-    val managerInternalCoroutineScope = CoroutineScope(Dispatchers.Default)
-
     override fun crackRequest(
         response: WorkerResponseDto,
-        retryCount: Int
+        retryCount: Int,
     ) {
-        managerInternalCoroutineScope.launch {
 
-            try {
-                taskUpdater(response)
-            } catch (e: Exception) {
-                if (retryCount > 1) {
-                    logger.info("Request ${response.requestId} [${response.partNumber}|2] try to save $retryCount")
-                    crackRequest(response, retryCount - 1)
-                } else {
-                    logger.info("Request ${response.requestId} [${response.partNumber}|2] failed")
-                    taskRepo.save(
-                        taskRepo.findFirstByRequestId(response.requestId)
-                            .apply {
-                                taskStatus = TaskStatus.ERROR
-                            }
-                    )
-                }
+
+        try {
+            taskUpdater(response)
+        } catch (e: Exception) {
+            if (retryCount > 1) {
+                logger.info("Request ${response.requestId} [${response.partNumber}|2] try to save $retryCount")
+                crackRequest(response, retryCount - 1)
+            } else {
+                logger.info("Request ${response.requestId} [${response.partNumber}|2] failed")
+                taskRepo.save(
+                    taskRepo.findFirstByRequestId(response.requestId)
+                        .apply {
+                            taskStatus = TaskStatus.ERROR
+                        }
+                )
             }
         }
+
     }
 
     private fun taskUpdater(response: WorkerResponseDto) {

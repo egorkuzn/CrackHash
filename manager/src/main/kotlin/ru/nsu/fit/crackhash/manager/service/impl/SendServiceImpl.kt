@@ -22,24 +22,17 @@ class SendServiceImpl(
     private val template: RabbitTemplate,
     @Value("\${workers.timeout}") private val timeout: Int,
 ) : SendService {
-    var sendServiceCoroutineScope = CoroutineScope(Dispatchers.Default)
-
     @PostConstruct
     override fun init() {
         rabbitListener()
     }
 
     override fun execute(requestId: String) {
-        sendServiceCoroutineScope.launch {
-            val task = taskRepo.findFirstByRequestId(requestId)
 
-            (1..task.partCount).forEach { partNumber ->
-                launch {
-                    logger.info("Sending [$partNumber|${task.partCount}] $requestId")
-                    workersPool.takeTask(task, partNumber)
-                    logger.info("Sent [$partNumber|${task.partCount}] $requestId")
-                }
-            }
+        val task = taskRepo.findFirstByRequestId(requestId)
+
+        (1..task.partCount).forEach { partNumber ->
+            workersPool.takeTask(task, partNumber)
         }
     }
 

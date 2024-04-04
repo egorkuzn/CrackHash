@@ -18,12 +18,14 @@ class WorkerApiImpl(
 ) : WorkerApi {
     override fun takeTask(task: TaskMongoEntity, partNumber: Int, retryCount: Int) {
         try {
+            logger.info("Sending [$partNumber|${task.partCount}] ${task.requestId}")
             mongoTaskRepo.save(task.apply { sendSet = sendSet.filterNot { it == partNumber }.toSet() })
             template.convertAndSend(
                 "manager-to-worker",
                 "worker",
                 WorkerTaskDto(task, partNumber)
             )
+            logger.info("Sent [$partNumber|${task.partCount}] ${task.requestId}")
         } catch (e: AmqpException) {
             mongoTaskRepo.save(task.apply { sendSet = sendSet + partNumber })
             logger.error(
