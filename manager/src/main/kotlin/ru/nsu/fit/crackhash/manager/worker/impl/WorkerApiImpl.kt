@@ -35,8 +35,12 @@ class WorkerApiImpl(
                 """
             )
         } catch (e: OptimisticLockingFailureException) {
-            if (retryCount > 1)
+            if (retryCount > 1) {
+                logger.info("Sent [$partNumber|${task.partCount}] ${task.requestId} RETRY $retryCount")
                 takeTask(task, partNumber, retryCount - 1)
+            } else {
+                logger.info("Sent [$partNumber|${task.partCount}] ${task.requestId} FAILED")
+            }
         }
     }
 }
