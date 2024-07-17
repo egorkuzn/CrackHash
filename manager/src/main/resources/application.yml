@@ -1,4 +1,14 @@
 workers:
   base_url: ${WORKER_BASE_URL}
   count: ${WORKERS_COUNT}
-  timeout: ${TIMEOUT}
+  timeout: ${TIMEOUT} # Time in minutes
+
+spring:
+  rabbitmq:
+    host: rabbitmq
+    port: 5672
+    username: ${RABBIT_USER}
+    password: ${RABBIT_PASS}
+    virtual-host: ${RABBIT_VHOST}
+  data.mongodb:
+    uri: mongodb://mongo1:27017,mongo2:27017,mongo3:27017/db?replicaSet=dbrs

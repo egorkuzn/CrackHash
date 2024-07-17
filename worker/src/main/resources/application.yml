@@ -1,3 +1,13 @@
 manager:
   url: ${MANAGER_URL}
   timeout: ${TIMEOUT}
+
+worker.number: ${WORKER_NUMBER}
+
+spring:
+  rabbitmq:
+    host: rabbitmq
+    port: 5672
+    username: ${RABBIT_USER}
+    password: ${RABBIT_PASS}
+    virtual-host: ${RABBIT_VHOST}

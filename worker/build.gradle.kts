@@ -18,16 +18,26 @@ repositories {
     mavenCentral()
 }
 
+val springCloudVersion by extra("2023.0.0")
+
 dependencies {
     implementation("commons-codec:commons-codec:1.16.1")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
-    implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.github.dpaukov:combinatoricslib3:3.3.3")
-    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+
+    // rabbit dependencies
+    implementation("org.springframework.cloud:spring-cloud-stream")
+    implementation("org.springframework.cloud:spring-cloud-starter-stream-rabbit")
+}
+
+dependencyManagement {
+    imports {
+        mavenBom("org.springframework.cloud:spring-cloud-dependencies:$springCloudVersion")
+    }
 }
 
 tasks.withType<KotlinCompile> {

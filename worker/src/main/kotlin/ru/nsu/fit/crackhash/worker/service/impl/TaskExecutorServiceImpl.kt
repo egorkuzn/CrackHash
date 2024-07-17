@@ -1,51 +1,63 @@
 package ru.nsu.fit.crackhash.worker.service.impl
 
-import kotlinx.coroutines.*
-import kotlinx.coroutines.future.asCompletableFuture
+import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeoutOrNull
 import org.paukov.combinatorics3.Generator
 import org.slf4j.Logger
+import org.springframework.amqp.AmqpException
+import org.springframework.amqp.rabbit.core.RabbitTemplate
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.util.DigestUtils
-import ru.nsu.fit.crackhash.worker.manager.ManagerApi
 import ru.nsu.fit.crackhash.worker.model.dto.WorkerResponseDto
 import ru.nsu.fit.crackhash.worker.model.enity.WorkerTask
 import ru.nsu.fit.crackhash.worker.service.TaskExecutorService
-import java.util.concurrent.TimeUnit
+import kotlin.time.DurationUnit
+import kotlin.time.toDuration
 
 @Service
 class TaskExecutorServiceImpl(
     @Value("\${manager.timeout}")
     private val timeoutMinutes: Long,
     private val logger: Logger,
-    private val manager: ManagerApi,
+    private val manager: RabbitTemplate
 ) : TaskExecutorService {
-    val taskExecutorScope = CoroutineScope(Dispatchers.Default)
+    override fun takeNewTask(workerTask: WorkerTask): Unit = runBlocking {
+        val loggerBase = workerTask.run { "Task [$partNumber|$partCount]#$requestId" }
 
-    override fun takeNewTask(workerTask: WorkerTask) {
-        taskExecutorScope.launch {
-            val loggerBase = workerTask.run { "Task [$partNumber|$partCount]#$requestId" }
-// либо семафор, либо атомик, средство синхронизации, peek
-            val job = async { executeTask(workerTask, loggerBase) { ensureActive() } }
-            val res = job.asCompletableFuture()
-                .completeOnTimeout(null, timeoutMinutes, TimeUnit.MINUTES)
-                .get()
+        logger.info("$loggerBase: Started")
 
-            manager.sendTaskResult(
-                WorkerResponseDto(
-                    workerTask.partNumber,
-                    workerTask.requestId,
-                    res
-                )
+        withTimeoutOrNull(timeoutMinutes.toDuration(DurationUnit.MINUTES)) {
+            executeTask(workerTask, loggerBase) { ensureActive() }
+        }.let { result ->
+            WorkerResponseDto(
+                workerTask.partNumber,
+                workerTask.requestId,
+                result
             )
+        }.let { workerResponse ->
+            try {
+                manager.convertAndSend(
+                    "worker-to-manager",
+                    "manager",
+                    workerResponse
+                )
 
-            job.cancelAndJoin()
-            val crackResultStatus = if (res != null) "successfully" else "with timeout"
-            logger.info("$loggerBase finished $crackResultStatus")
+                val taskResultState = if (workerResponse.value == null) "TIMEOUT" else "SUCCESS"
+                logger.info("$loggerBase: Finished $taskResultState.")
+            } catch (e: AmqpException) {
+                logger.error("$loggerBase: Exception ${e.message}")
+            }
         }
     }
 
-    private fun executeTask(workerTask: WorkerTask, loggerBase: String, cancellationDispatch: () -> Unit): List<String> {
+
+    private fun executeTask(
+        workerTask: WorkerTask,
+        loggerBase: String,
+        cancellationDispatch: () -> Unit,
+    ): List<String> {
         workerTask.apply { logger.info("$loggerBase started") }
         return (1..workerTask.maxLength).flatMap {
             workerTask.apply { logger.info("$loggerBase running $it/${workerTask.maxLength} symbols") }

@@ -1,47 +1,103 @@
-version: '3.3'
+version: '3.9'
 
 services:
   crackhash-manager:
     env_file:
       - .env
-    image: 1c3bb3a3421d67ad018c15bb4ed1a9c2b4edd76ae081883dfb6a69b13163ace3
+    build: ./manager/
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      mongo1:
+        condition: service_healthy
     networks:
       - crackhash
     ports:
-      - "10010:80"
+      - '10010:80'
     restart: on-failure
+
   crackhash-worker-1:
+    environment:
+      WORKER_NUMBER: 1
     env_file:
       - .env
     build: ./worker/
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
     networks:
       - crackhash
-    #    deploy:
-    #      mode: replicated
-    #      replicas: 4
-    #      endpoint_mode: dnsrr
     restart: on-failure
+
   crackhash-worker-2:
+    environment:
+      WORKER_NUMBER: 2
     env_file:
       - .env
     build: ./worker/
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
     networks:
       - crackhash
     restart: on-failure
-  crackhash-worker-3:
-    env_file:
-      - .env
-    build: ./worker/
+
+  rabbitmq:
+    image: 'rabbitmq:3.13.0-management-alpine'
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBIT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBIT_PASS}
+      RABBITMQ_DEFAULT_VHOST: ${RABBIT_VHOST}
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 30s
+      timeout: 30s
+      retries: 3
     networks:
       - crackhash
     restart: on-failure
-  crackhash-worker-4:
-    env_file:
-      - .env
-    build: ./worker/
+    ports:
+      - '5672:5672'
+      - '15672:15672'
+
+  mongo1:
+    container_name: mongo1
+    image: mongo:7.0.7-rc2
+    volumes:
+      - ~/mongors/data1:/data/db
+      - ./rs-init.sh:/scripts/rs-init.sh
     networks:
       - crackhash
-    restart: on-failure
+    links:
+      - mongo2
+      - mongo3
+    restart: always
+    command: [ "mongod", "--bind_ip_all", "--replSet", "dbrs"]
+    healthcheck:
+      test: "./scripts/rs-init.sh"
+      interval: 5s
+      timeout: 20s
+      retries: 20
+
+  mongo2:
+    container_name: mongo2
+    image: mongo:7.0.7-rc2
+    volumes:
+      - ~/mongors/data2:/data/db
+    networks:
+      - crackhash
+    restart: always
+    command: [ "mongod", "--bind_ip_all", "--replSet", "dbrs" ]
+
+  mongo3:
+    container_name: mongo3
+    image: mongo:7.0.7-rc2
+    volumes:
+      - ~/mongors/data3:/data/db
+    networks:
+      - crackhash
+    restart: always
+    command: [ "mongod", "--bind_ip_all", "--replSet", "dbrs" ]
 
 networks:
   crackhash:
